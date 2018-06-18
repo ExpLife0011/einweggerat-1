@@ -225,7 +225,20 @@ public:
 
 		void DoFrame()
 		{
-			if(emulator)emulator->splash();
+			if(emulator->isEmulating)emulator->run();
+         else
+         {
+               PAINTSTRUCT ps;
+               HDC pDC = BeginPaint(&ps);
+               RECT rect;
+               GetClientRect(&rect);
+               // I don't really want it black but this
+               // will do for testing the concept:
+               HBRUSH hBrush = (HBRUSH)::GetStockObject(BLACK_BRUSH);
+               ::FillRect(pDC, &rect, hBrush);
+               ::ValidateRect(m_hWnd, &rect);
+               EndPaint(&ps);
+         }
 		}
 
 
@@ -307,43 +320,18 @@ public:
 		int nIdleCount = 0;
 		BOOL bRet = FALSE;
 
-		for(;;)
-		{
-			while (!::PeekMessage(&m_msg, NULL, 0, 0, PM_NOREMOVE))
-			{
-				while (bDoIdle && !::PeekMessage(&m_msg, NULL, 0, 0, PM_NOREMOVE))
-				{
-					if (!OnIdle(nIdleCount++))
-						bDoIdle = FALSE;
-				}
-				gamewnd.DoFrame();
-			}
-
-			bRet = ::GetMessage(&m_msg, NULL, 0, 0);
-
-			if(bRet == -1)
-			{
-				ATLTRACE2(atlTraceUI, 0, _T("::GetMessage returned -1 (error)\n"));
-				continue;   // error, don't process
-			}
-			else if(!bRet)
-			{
-				ATLTRACE2(atlTraceUI, 0, _T("CMessageLoop::Run - exiting\n"));
-				break;   // WM_QUIT, exit message loop
-			}
-
-			if(!PreTranslateMessage(&m_msg))
-			{
-				::TranslateMessage(&m_msg);
-				::DispatchMessage(&m_msg);
-			}
-
-			if(IsIdleMessage(&m_msg))
-			{
-				bDoIdle = TRUE;
-				nIdleCount = 0;
-			}
-		}
+      while (m_msg.message != WM_QUIT)
+      {
+         if (PeekMessage(&m_msg, 0, 0, 0, PM_REMOVE))
+         {
+            TranslateMessage(&m_msg);
+            DispatchMessage(&m_msg);
+         }
+         else
+         {
+            gamewnd.DoFrame();
+         }
+      }
 
 		return (int)m_msg.wParam;
 	}

@@ -678,10 +678,6 @@ bool CLibretro::init_common()
   retro_system_av_info av = { 0 };
   g_retro.retro_get_system_av_info(&av);
   ::video_configure(&av.geometry, emulator_hwnd);
-  DEVMODE lpDevMode;
-  memset(&lpDevMode, 0, sizeof(DEVMODE));
-  lpDevMode.dmSize = sizeof(DEVMODE);
-  lpDevMode.dmDriverExtra = 0;
   double refreshr = 0;
   DWM_TIMING_INFO timing_info = { 0 };
   timing_info.cbSize = sizeof(timing_info);
@@ -714,18 +710,9 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
   }
 }
 
-void CLibretro::splash()
+void CLibretro::run()
 {
-  if (!isEmulating) {
-    PAINTSTRUCT ps;
-    HDC pDC = BeginPaint(emulator_hwnd, &ps);
-    RECT rect;
-    GetClientRect(emulator_hwnd, &rect);
-    HBRUSH hBrush = (HBRUSH)::GetStockObject(BLACK_BRUSH);
-    ::FillRect(pDC, &rect, hBrush);
-    EndPaint(emulator_hwnd, &ps);
-  }
-  else if (!threaded)
+if (!threaded)
   {
      glBindFramebuffer(GL_FRAMEBUFFER, 0);
      glClearColor(0, 0, 0, 1);
@@ -778,10 +765,6 @@ void CLibretro::splash()
     }
 
   }
-}
-
-
-void CLibretro::run() {
 }
 
 bool CLibretro::init(HWND hwnd)

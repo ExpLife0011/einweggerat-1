@@ -1,6 +1,7 @@
 #define MAL_IMPLEMENTATION
 #define MAL_NO_WASAPI
 #define MAL_NO_WINMM
+#define MAL_NO_OPENAL
 #include "audio.h"
 #include <initguid.h>
 #include <Mmdeviceapi.h>
@@ -168,7 +169,6 @@ void Audio::mix(const int16_t* samples, size_t size)
       scond_wait(condz, lockz);
       slock_unlock(lockz);
       continue;
-
     }
   }
 }
@@ -178,9 +178,9 @@ mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
   size_t amount = fifo_read_avail(_fifo);
   amount = count > amount ? amount : count;
   fifo_read(_fifo, out, amount);
+  memset(out + amount, 0, count - amount);
   scond_signal(condz);
   slock_unlock(lockz);
-  memset(out + amount, 0, count - amount);
   return count;
 }
 

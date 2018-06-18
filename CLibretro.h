@@ -54,7 +54,6 @@ public:
   DWORD rate;
   bool running();
   bool loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecificoptions, bool mthreaded = false);
-  void splash();
   void render();
   void run();
   void reset();
