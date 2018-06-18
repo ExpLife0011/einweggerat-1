@@ -11,9 +11,9 @@ Requires Windows Vista SP1. No exceptions.
 Has:
 * Dynamic rate control
 * Vsync
-* OpenGL/Direct3D9 interop based rendering
+* OpenGL based rendering
 * DirectInput/Xinput input
-* DirectSound/WASAPI/WinMM audio output
+* DirectSound audio output
 * Command line based ROM/core loading
 * Savestates/SRAM saving/loading
 * Per-game input/core option loading/saving
