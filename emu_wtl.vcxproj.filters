@@ -36,19 +36,13 @@
     <ClCompile Include="3rdparty\resampler.c">
       <Filter>io</Filter>
     </ClCompile>
-    <ClCompile Include="3rdparty\libretro-common\queues\fifo_queue.c">
-      <Filter>io</Filter>
-    </ClCompile>
-    <ClCompile Include="3rdparty\libretro-common\memmap\memalign.c">
-      <Filter>io</Filter>
-    </ClCompile>
     <ClCompile Include="io\audio.cpp">
       <Filter>io</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="3rdparty\libretro-common\rthreads\rthreads.c">
+    <ClCompile Include="3rdparty\rthreads.c">
       <Filter>io</Filter>
     </ClCompile>
   </ItemGroup>

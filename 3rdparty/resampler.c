@@ -21,21 +21,7 @@
 */
 
 /* Bog-standard windowed SINC implementation. */
-
-#include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-
-#include <retro_inline.h>
-#include <filters.h>
-#include <memalign.h>
-
-#include <audio/audio_resampler.h>
-#include <filters.h>
-
-
-#include <xmmintrin.h>
+#include "resampler.h"
 
 /* Rough SNR values for upsampling:
 * LOWEST: 40 dB
@@ -117,6 +103,7 @@
 #define SUBPHASE_MASK ((1 << SUBPHASE_BITS) - 1)
 #define SUBPHASE_MOD (1.0f / (1 << SUBPHASE_BITS))
 
+
 typedef struct rarch_sinc_resampler
 {
 	float *phase_table;
@@ -133,6 +120,77 @@ typedef struct rarch_sinc_resampler
 	* Ensure that we get as good cache locality as we can hope for. */
 	float *main_buffer;
 } rarch_sinc_resampler_t;
+
+
+/* Modified Bessel function of first order.
+* Check Wiki for mathematical definition ... */
+static __forceinline double besseli0(double x)
+{
+   unsigned i;
+   double sum = 0.0;
+   double factorial = 1.0;
+   double factorial_mult = 0.0;
+   double x_pow = 1.0;
+   double two_div_pow = 1.0;
+   double x_sqr = x * x;
+
+   /* Approximate. This is an infinite sum.
+   * Luckily, it converges rather fast. */
+   for (i = 0; i < 18; i++)
+   {
+      sum += x_pow * two_div_pow / (factorial * factorial);
+
+      factorial_mult += 1.0;
+      x_pow *= x_sqr;
+      two_div_pow *= 0.25;
+      factorial *= factorial_mult;
+   }
+
+   return sum;
+}
+
+static __forceinline double kaiser_window_function(double index, double beta)
+{
+   return besseli0(beta * sqrtf(1 - index * index));
+}
+
+static __forceinline double sinc(double val)
+{
+   if (fabs(val) < 0.00001)
+      return 1.0;
+   return sin(val) / val;
+}
+
+static __forceinline double lanzcos_window_function(double index)
+{
+   return sinc(M_PI * index);
+}
+
+void *memalign_alloc(size_t boundary, size_t size)
+{
+   void **place = NULL;
+   uintptr_t addr = 0;
+   void *ptr = (void*)malloc(boundary + size + sizeof(uintptr_t));
+   if (!ptr)
+      return NULL;
+
+   addr = ((uintptr_t)ptr + sizeof(uintptr_t) + boundary)
+      & ~(boundary - 1);
+   place = (void**)addr;
+   place[-1] = ptr;
+
+   return (void*)addr;
+}
+
+void memalign_free(void *ptr)
+{
+   void **p = NULL;
+   if (!ptr)
+      return;
+
+   p = (void**)ptr;
+   free(p[-1]);
+}
 
 void resampler_sinc_process(void *re_, struct resampler_data *data)
 {
