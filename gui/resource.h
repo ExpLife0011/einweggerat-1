@@ -53,8 +53,9 @@
 #define IDC_Z64POTFBO                   1190
 #define IDC_LIST_VARIABLES              1191
 #define IDC_CREDITS                     1192
-#define IDC_TAB1                        1193
 #define IDC_TAB                         1193
+#define ID_SAVE                         1194
+#define ID_CANCEL                       1195
 #define IDC_EXIT                        40001
 #define IDC_ABOUT                       40002
 #define ID_FILE_OPEN40003               40003
@@ -101,7 +102,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         40056
-#define _APS_NEXT_CONTROL_VALUE         1194
+#define _APS_NEXT_CONTROL_VALUE         1196
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
