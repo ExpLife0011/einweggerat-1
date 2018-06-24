@@ -206,11 +206,10 @@
   <ItemGroup>
     <ClInclude Include="3rdparty\libretro.h" />
     <ClInclude Include="CLibretro.h" />
-    <ClInclude Include="gui\CoreVariablesConfig.h" />
     <ClInclude Include="gui\DropFileTarget.h" />
     <ClInclude Include="gui\emu_wtl.h" />
-    <ClInclude Include="gui\InputConfig.h" />
     <ClInclude Include="gui\MyWindow.h" />
+    <ClInclude Include="gui\Options.h" />
     <ClInclude Include="gui\Resource.h" />
     <ClInclude Include="gui\utf8conv.h" />
     <ClInclude Include="io\abstract_file.h" />
@@ -266,7 +265,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="emu_wtl.ico" />
+    <Image Include="gamepad.ico" />
     <Image Include="gui\bitmap1.bmp" />
+    <Image Include="gui\gamepad.ico" />
+    <Image Include="gui\options.ico" />
+    <Image Include="options.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

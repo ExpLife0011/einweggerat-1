@@ -15,7 +15,10 @@
 #define IDD_Z64SETTINGS1                129
 #define IDI_ICON1                       134
 #define IDD_VARIABLES                   135
+#define IDD_OPTIONS                     136
 #define IDR_ACCELERATOR1                138
+#define IDI_ICON2                       139
+#define IDI_ICON3                       140
 #define IDC_LIST_ASSIGN                 1000
 #define IDC_APPVER                      1001
 #define IDC_ADD                         1001
@@ -50,6 +53,8 @@
 #define IDC_Z64POTFBO                   1190
 #define IDC_LIST_VARIABLES              1191
 #define IDC_CREDITS                     1192
+#define IDC_TAB1                        1193
+#define IDC_TAB                         1193
 #define IDC_EXIT                        40001
 #define IDC_ABOUT                       40002
 #define ID_FILE_OPEN40003               40003
@@ -94,9 +99,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        139
+#define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         40056
-#define _APS_NEXT_CONTROL_VALUE         1193
+#define _APS_NEXT_CONTROL_VALUE         1194
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

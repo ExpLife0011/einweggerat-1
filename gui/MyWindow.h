@@ -21,8 +21,8 @@
 using namespace std;
 using namespace utf8util;
 
-#include "InputConfig.h"
-#include "CoreVariablesConfig.h"
+
+#include "Options.h"
 #pragma comment(lib, "shlwapi.lib")
 
 
@@ -106,10 +106,8 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_SIZE,OnSize)
-		COMMAND_ID_HANDLER(ID_PREFERENCES_INPUTCONFIG, OnInput)
-		COMMAND_ID_HANDLER(ID_PREFERENCES_COREVARIABLES, OnVariables)
+		COMMAND_ID_HANDLER(ID_OPTIONS, OnOptions)
 		COMMAND_ID_HANDLER_EX(IDC_EXIT, OnFileExit)
-		COMMAND_ID_HANDLER(ID_FILE_OPEN, OnFileOpen)
 		COMMAND_ID_HANDLER(ID_ABOUT, OnAbout)
 		COMMAND_ID_HANDLER(ID_LOADSTATEFILE,OnLoadState)
 		COMMAND_ID_HANDLER(ID_SAVESTATEFILE, OnSaveState)
@@ -263,19 +261,10 @@ public:
 			return 0;
 		}
 
-		LRESULT OnInput(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
+		LRESULT OnOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 		{
-			CInputView dlg;
+			COptions dlg;
 			dlg.DoModal();
-
-			return 0;
-		}
-
-		LRESULT OnVariables(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-		{
-			CVariablesView dlg;
-			dlg.DoModal();
-
 			return 0;
 		}
 

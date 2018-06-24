@@ -107,10 +107,7 @@
     <ClInclude Include="gui\utf8conv.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="gui\InputConfig.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\CoreVariablesConfig.h">
+    <ClInclude Include="gui\Options.h">
       <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
@@ -120,6 +117,10 @@
   <ItemGroup>
     <Image Include="emu_wtl.ico" />
     <Image Include="gui\bitmap1.bmp" />
+    <Image Include="gamepad.ico" />
+    <Image Include="options.ico" />
+    <Image Include="gui\gamepad.ico" />
+    <Image Include="gui\options.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\emu_wtl.ico" />
