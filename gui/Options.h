@@ -88,6 +88,17 @@ public:
          add_to_list(assign, last_event, action, n, description, true);
          bl->replace(n, last_event, action, description, retro_id);
 
+         input->bl = bl->copy();
+         Std_File_Writer_u out2;
+         if (!out2.open(input->path))
+         {
+            input->save(out2);
+            out2.close();
+            ListView_SetSelectionMark(assign, n);
+            editevent.SetWindowTextW(L"Settings saved");
+            return 1;
+         }
+         
       }
       ListView_SetSelectionMark(assign, n);
       editevent.SetWindowTextW(L"");
@@ -120,7 +131,7 @@ public:
 
          lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
          lvc.fmt = LVCFMT_LEFT;
-         lvc.cx = 260;
+         lvc.cx = 200;
          lvc.pszText = _T("Event");
          lvc.iSubItem = 0;
          assign.InsertColumn(0, &lvc);
@@ -409,6 +420,7 @@ public:
    enum { IDD = IDD_VARIABLES };
    BEGIN_MSG_MAP(CVariablesView)
       MESSAGE_HANDLER(WM_DESTROY, OnClose)
+      MESSAGE_HANDLER(WM_CLOSE, OnClose)
       MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialogView1)
       NOTIFY_CODE_HANDLER(PIN_SELCHANGED, OnSelChanged);
    NOTIFY_CODE_HANDLER(PIN_ITEMCHANGED, OnItemChanged);
@@ -489,7 +501,7 @@ public:
       retro = CLibretro::GetSingleton();
       m_grid.SubclassWindow(GetDlgItem(IDC_LIST_VARIABLES));
       m_grid.InsertColumn(0, _T("Option"), LVCFMT_LEFT, 200, 0);
-      m_grid.InsertColumn(1, _T("Setting"), LVCFMT_LEFT, 80, 0);
+      m_grid.InsertColumn(1, _T("Setting"), LVCFMT_LEFT, 150, 0);
       m_grid.SetExtendedGridStyle(PGS_EX_SINGLECLICKEDIT);
 
       for (int i = 0; i < retro->variables.size(); i++)
@@ -593,7 +605,8 @@ public:
    CVariablesView m_view1;
    CInputView m_view2;
 
-   BEGIN_MSG_MAP(CAboutDlg)
+   BEGIN_MSG_MAP(COptions)
+      MESSAGE_HANDLER(WM_CLOSE,OnClose)
       MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
       COMMAND_ID_HANDLER(ID_SAVE, OnOK)
       COMMAND_ID_HANDLER(ID_CANCEL, OnCloseCmd)
@@ -631,6 +644,12 @@ public:
       m_ctrlTab.SetCurSel(0);
 
       CenterWindow(GetParent());
+      return TRUE;
+   }
+
+   LRESULT OnClose(UINT /*uMsg*/, WPARAM wID, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+   {
+      EndDialog(wID);
       return TRUE;
    }
 

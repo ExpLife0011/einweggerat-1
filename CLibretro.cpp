@@ -739,7 +739,7 @@ if (!threaded)
                        // printf and reset timer
       TCHAR buffer[200] = { 0 };
       int len = 0;
-      if (1)
+  /*    if (1)
       {
          static int maxfps = nbFrames;
          static int minfps = nbFrames;
@@ -752,10 +752,10 @@ if (!threaded)
             minfps = min(minfps, val[i]);
          }
          mean = accumulate(val.begin(), val.end(), 0.0) / val.size();
-         len = swprintf(buffer, 200, L"einweggerät: %.2f ms/current frame\n, (%d min/%d max/%.2f mean/%d current) VPS %d frames executed", 1000.0 / double(nbFrames),minfps,maxfps,mean, nbFrames,nbfra);
+       //  len = swprintf(buffer, 200, L"einweggerät: %.2f ms/current frame\n, (%d min/%d max/%.2f mean/%d current) VPS %d frames executed", 1000.0 / double(nbFrames),minfps,maxfps,mean, nbFrames,nbfra);
      //    fprintf(logfile, "einweggerät:(%d min/%d max/%.2f mean) VPS\n", minfps, maxfps, mean,nbfra);
-      }
-      else len = swprintf(buffer, 200, L"einweggerät: %2f ms/frame\n, min %d VPS", 1000.0 / double(nbFrames), nbFrames);
+      }*/
+     len = swprintf(buffer, 200, L"einweggerät: %2f ms/frame\n, min %d VPS", 1000.0 / double(nbFrames), nbFrames);
          
          
          //len = swprintf(buffer, 100, L"einweggerät: %2f ms/frame\n, %d VPS", 1000.0 / double(nbFrames), nbFrames);
