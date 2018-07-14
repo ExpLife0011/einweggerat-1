@@ -1,6 +1,6 @@
 # DON'T BE A DICK PUBLIC LICENSE
 
-> Copyright (C) mudlord
+> Copyright &copy; mudlord
  
  Everyone is permitted to copy and distribute verbatim or modified
  copies of this license document.

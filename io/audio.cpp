@@ -1,7 +1,4 @@
 #define MAL_IMPLEMENTATION
-#define MAL_NO_WASAPI
-#define MAL_NO_WINMM
-#define MAL_NO_OPENAL
 #include "audio.h"
 #include <initguid.h>
 #include <Mmdeviceapi.h>
@@ -69,8 +66,8 @@ void fifo_read(fifo_buffer_t *buffer, void *in_buf, size_t size)
 static mal_uint32 audio_callback(mal_device* pDevice, mal_uint32 frameCount, void* pSamples)
 {
   //convert from samples to the actual number of bytes.
-  int count_bytes = frameCount * pDevice->channels * mal_get_sample_size_in_bytes(mal_format_f32);
-  int ret = ((Audio*)pDevice->pUserData)->fill_buffer((uint8_t*)pSamples, count_bytes) / mal_get_sample_size_in_bytes(mal_format_f32);
+  int count_bytes = frameCount * pDevice->channels * mal_get_bytes_per_sample(mal_format_f32);
+  int ret = ((Audio*)pDevice->pUserData)->fill_buffer((uint8_t*)pSamples, count_bytes) / mal_get_bytes_per_sample(mal_format_f32);
   return ret / pDevice->channels;
   //...and back to samples
 }
@@ -199,7 +196,7 @@ void Audio::mix(const int16_t* samples, size_t size)
   int    half_size = (int)_fifo->size / 2;
   double drc_ratio = resamp_original * (1.0 + 0.005 *
     (((int)fifo_write_avail(_fifo) - half_size) / (double)half_size));
-  mal_pcm_s16_to_f32(input_float, samples, in_len);
+  mal_pcm_s16_to_f32(input_float, samples, in_len,mal_dither_mode_triangle);
 
   struct resampler_data src_data = { 0 };
   src_data.input_frames = size;

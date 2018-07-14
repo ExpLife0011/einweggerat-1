@@ -718,51 +718,19 @@ if (!threaded)
      glClearColor(0, 0, 0, 1);
      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
      g_retro.retro_run();
-
-
-     static vector<float> val;
-     static int nbfra = 0;
-     static double mean = 0;
      
      double currentTime = (double)milliseconds_now() / 1000;
-     nbFrames++;
-     nbfra++;
-
-     //  static bool loadstate = true;
-     // if (loadstate)
-     // {
-
-     // savestate(L"s.state");
- // }
+    
 
     if (currentTime - lastTime >= 0.5) { // If last prinf() was more than 1 sec ago
                        // printf and reset timer
       TCHAR buffer[200] = { 0 };
-      int len = 0;
-  /*    if (1)
-      {
-         static int maxfps = nbFrames;
-         static int minfps = nbFrames;
-   
-
-         val.push_back(nbFrames);
-         for (int i = 0; i < val.size(); i++)
-         {
-            maxfps = max(maxfps, val[i]);
-            minfps = min(minfps, val[i]);
-         }
-         mean = accumulate(val.begin(), val.end(), 0.0) / val.size();
-       //  len = swprintf(buffer, 200, L"einweggerät: %.2f ms/current frame\n, (%d min/%d max/%.2f mean/%d current) VPS %d frames executed", 1000.0 / double(nbFrames),minfps,maxfps,mean, nbFrames,nbfra);
-     //    fprintf(logfile, "einweggerät:(%d min/%d max/%.2f mean) VPS\n", minfps, maxfps, mean,nbfra);
-      }*/
-     len = swprintf(buffer, 200, L"einweggerät: %2f ms/frame\n, min %d VPS", 1000.0 / double(nbFrames), nbFrames);
-         
-         
-         //len = swprintf(buffer, 100, L"einweggerät: %2f ms/frame\n, %d VPS", 1000.0 / double(nbFrames), nbFrames);
+      int len = swprintf(buffer, 200, L"einweggerät: %2f ms/frame\n, min %d VPS", 1000.0 / double(nbFrames), nbFrames);
       SetWindowText(emulator_hwnd, buffer);
       nbFrames = 0;
       lastTime += 1.0;
     }
+    nbFrames++;
 
   }
 }
