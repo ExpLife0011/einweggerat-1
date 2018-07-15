@@ -68,20 +68,17 @@ uintptr_t core_get_current_framebuffer() {
   return g_video.fbo_id;
 }
 
-
 #pragma optimize( "", off )  
 void init_coresettings(retro_variable *var)
 {
-  CLibretro * retro = CLibretro::GetSingleton();
-  FILE *fp = NULL;
-  fp = _wfopen(retro->corevar_path, L"r");
-  if (!fp)
-  {
-    //create a new file with defaults
-    ini_t* ini = ini_create(NULL);
-    while (var->key && var->value)
-    {
-      CLibretro::core_vars vars_struct;
+   CLibretro * retro = CLibretro::GetSingleton();
+   FILE *fp = NULL;
+   std::vector<CLibretro::core_vars> variables1;
+   variables1.clear();
+   //set up core variable information and default key settings
+   while (var != NULL && var->key != NULL)
+   {
+      CLibretro::core_vars vars_struct = { 0 };
       strcpy(vars_struct.name, var->key);
       char descript[50] = { 0 };
       char *e = strchr((char*)var->value, ';');
@@ -89,27 +86,28 @@ void init_coresettings(retro_variable *var)
       strcpy(vars_struct.description, descript);
       char * pch = strstr((char*)var->value, (char*)"; ");
       pch += strlen("; ");
-      int vars = 0;
       strcpy(vars_struct.usevars, pch);
-      while (pch != NULL)
-      {
-        char val[255] = { 0 };
-        char* str2 = strstr(pch, (char*)"|");
-        if (!str2)
-        {
-          strcpy(val, pch);
-          break;
-        }
-        strncpy(val, pch, str2 - pch);
-        if (!vars) {
-          strcpy(vars_struct.var, val);
-          ini_property_add(ini, INI_GLOBAL_SECTION, var->key, strlen(var->key), val, strlen(val));
-        }
-        pch += str2 - pch++;
-        vars++;
+      char* str2 = strstr(pch, (char*)"|");
+      if (!str2){
+          strcpy(vars_struct.var, pch);
       }
-      retro->variables.push_back(vars_struct);
+      else {
+      strncpy(vars_struct.var, pch, str2 - pch);
+      }
+      variables1.push_back(vars_struct);
       ++var;
+   }
+
+  fp = _wfopen(retro->corevar_path, L"r");
+  if (!fp)
+  {
+    create_filez:
+    //create a new file with defaults
+    ini_t* ini = ini_create(NULL);
+    for (int i = 0; i < variables1.size(); i++)
+    {
+       ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name,strlen(variables1[i].name), (char*)variables1[i].var, strlen(variables1[i].var));
+       retro->variables.push_back(variables1[i]);
     }
     int size = ini_save(ini, NULL, 0); // Find the size needed
     char* data = (char*)malloc(size);
@@ -131,21 +129,37 @@ void init_coresettings(retro_variable *var)
     fclose(fp);
     ini_t* ini = ini_load(data, NULL);
     free(data);
-    while (var->key && var->value)
+    int vars_num1 = variables1.size();
+    int vars_infile = ini_property_count(ini, INI_GLOBAL_SECTION);
+    if (vars_infile != vars_num1) {
+       fclose(fp);
+    }
+    bool save = false;
+    for (int i= 0; i < vars_num1; i++)
     {
-      CLibretro::core_vars vars_struct = { 0 };
-      strcpy(vars_struct.name, var->key);
-      char *e = strchr((char*)var->value, ';');
-      strncpy(vars_struct.description, var->value, (int)(e - var->value));
-      char * pch = strstr((char*)var->value, (char*)"; ");
-      pch += strlen("; ");
-      int vars = 0;
-      strcpy(vars_struct.usevars, pch);
-      int second_index = ini_find_property(ini, INI_GLOBAL_SECTION,(char*)var->key,strlen(var->key));
-      const char* variable_val = ini_property_value(ini, INI_GLOBAL_SECTION, second_index);
-      strcpy(vars_struct.var, variable_val);
-      retro->variables.push_back(vars_struct);
-      ++var;
+       int second_index = ini_find_property(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name, strlen(variables1[i].name));
+       if (second_index != INI_NOT_FOUND)
+       {
+          const char* variable_val = ini_property_value(ini, INI_GLOBAL_SECTION, second_index);
+          strcpy(variables1[i].var, variable_val);
+          retro->variables.push_back(variables1[i]);
+       }
+       else
+       {
+          ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name, strlen(variables1[i].name), (char*)variables1[i].var, strlen(variables1[i].var));
+          retro->variables.push_back(variables1[i]);
+          save = true;
+       }
+    }
+    if (save)
+    {
+       int size = ini_save(ini, NULL, 0); // Find the size needed
+       char* data = (char*)malloc(size);
+       size = ini_save(ini, data, size); // Actually save the file
+       fp = _wfopen(retro->corevar_path, L"w");
+       fwrite(data, 1, size, fp);
+       fclose(fp);
+       free(data);
     }
     ini_destroy(ini);
   }
