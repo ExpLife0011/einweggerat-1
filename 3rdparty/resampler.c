@@ -31,42 +31,6 @@
 * HIGHEST: 140 dB
 */
 
-/* TODO, make all this more configurable. */
-#if defined(SINC_LOWEST_QUALITY)
-#define SINC_WINDOW_LANCZOS
-#define CUTOFF 0.98
-#define PHASE_BITS 12
-#define SINC_COEFF_LERP 0
-#define SUBPHASE_BITS 10
-#define SIDELOBES 2
-#define ENABLE_AVX 0
-#elif defined(SINC_LOWER_QUALITY)
-#define SINC_WINDOW_LANCZOS
-#define CUTOFF 0.98
-#define PHASE_BITS 12
-#define SUBPHASE_BITS 10
-#define SINC_COEFF_LERP 0
-#define SIDELOBES 4
-#define ENABLE_AVX 0
-#elif defined(SINC_HIGHER_QUALITY)
-#define SINC_WINDOW_KAISER
-#define SINC_WINDOW_KAISER_BETA 10.5
-#define CUTOFF 0.90
-#define PHASE_BITS 10
-#define SUBPHASE_BITS 14
-#define SINC_COEFF_LERP 1
-#define SIDELOBES 32
-#define ENABLE_AVX 1
-#elif defined(SINC_HIGHEST_QUALITY)
-#define SINC_WINDOW_KAISER
-#define SINC_WINDOW_KAISER_BETA 14.5
-#define CUTOFF 0.962
-#define PHASE_BITS 10
-#define SUBPHASE_BITS 14
-#define SINC_COEFF_LERP 1
-#define SIDELOBES 128
-#define ENABLE_AVX 1
-#else
 #define SINC_WINDOW_KAISER
 #define SINC_WINDOW_KAISER_BETA 5.5
 #define CUTOFF 0.825
@@ -75,7 +39,6 @@
 #define SINC_COEFF_LERP 1
 #define SIDELOBES 8
 #define ENABLE_AVX 0
-#endif
 
 #if SINC_COEFF_LERP
 #define TAPS_MULT 2

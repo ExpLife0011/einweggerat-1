@@ -11,10 +11,10 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include "ini.h"
-#include "libretro.h"
+#include "../3rdparty/ini.h"
+#include "../3rdparty/libretro.h"
 #include <shlwapi.h>
-#include "cmdline.h"
+#include "../3rdparty/cmdline.h"
 #include <dwmapi.h>
 #pragma comment (lib,"dwmapi.lib")
 
@@ -92,7 +92,7 @@ public:
 		
 		greets.SetWindowText(greetz);
 		website.SubclassWindow(GetDlgItem(IDC_LINK));
-		website.SetHyperLink(_T("http://mudlord.info"));
+		website.SetHyperLink(_T("http://rebote.net"));
 		return TRUE;
 	}
 };

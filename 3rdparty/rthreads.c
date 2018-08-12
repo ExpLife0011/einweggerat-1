@@ -26,7 +26,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <rthreads.h>
+#include "rthreads.h"
 
 /* with RETRO_WIN32_USE_PTHREADS, pthreads can be used even on win32. Maybe only supported in MSVC>=2005  */
 

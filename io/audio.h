@@ -4,8 +4,8 @@
 #include <list>
 #include "../3rdparty/mini_al.h"
 #include "../3rdparty/libretro.h"
-#include "rthreads.h"
-#include "resampler.h"
+#include "../3rdparty/rthreads.h"
+#include "../3rdparty/resampler.h"
 
 
 #ifdef __cplusplus

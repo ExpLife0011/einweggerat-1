@@ -1,6 +1,5 @@
 #pragma once
 
-#pragma optimize( "", on )  
 class CInputView : public CDialogImpl<CInputView>
 {
 public:
@@ -412,7 +411,7 @@ std::string ws2s(const std::wstring &wstr)
    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
    return strTo;
 }
-#pragma optimize( "", off )  
+
 class CVariablesView : public CDialogImpl<CVariablesView>
 {
 public:
