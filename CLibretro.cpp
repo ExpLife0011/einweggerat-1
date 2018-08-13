@@ -61,13 +61,11 @@ static void core_log(enum retro_log_level level, const char *fmt, ...) {
     fprintf(stdout, "%s", buffer2);
 }
 
-
 uintptr_t core_get_current_framebuffer() {
     return g_video.fbo_id;
 }
 
-void init_coresettings(retro_variable *var)
-{
+void init_coresettings(retro_variable *var){
     CLibretro * retro = CLibretro::GetSingleton();
     FILE *fp = NULL;
     std::vector<CLibretro::core_vars> variables1;
@@ -162,8 +160,7 @@ void init_coresettings(retro_variable *var)
     }
 }
 
-const char* load_coresettings(retro_variable *var)
-{
+const char* load_coresettings(retro_variable *var){
     CLibretro *retro = CLibretro::GetSingleton();
     for (int i = 0; i < retro->variables.size(); i++)
     {
@@ -174,8 +171,6 @@ const char* load_coresettings(retro_variable *var)
     }
     return NULL;
 }
-
-
 
 bool core_environment(unsigned cmd, void *data) {
     bool *bval;
@@ -231,7 +226,6 @@ bool core_environment(unsigned cmd, void *data) {
                     input_device->bl->clear();
                     goto init;
                 }
-
             }
             out.close();
         }
@@ -312,14 +306,12 @@ bool core_environment(unsigned cmd, void *data) {
         core_log(RETRO_LOG_DEBUG, "Unhandled env #%u", cmd);
         return false;
     }
-
     return false;
 }
 
 static void core_video_refresh(const void *data, unsigned width, unsigned height, size_t pitch) {
     video_refresh(data, width, height, pitch);
 }
-
 
 static void core_input_poll(void) {
     input *input_device = input::GetSingleton();
@@ -369,20 +361,17 @@ static int16_t core_input_state(unsigned port, unsigned device, unsigned index, 
     return 0;
 }
 
-void CLibretro::core_audio_sample(int16_t left, int16_t right)
-{
+void CLibretro::core_audio_sample(int16_t left, int16_t right){
     int16_t buf[2] = { left, right };
     _audio.mix(buf, 1);
 }
 
-size_t CLibretro::core_audio_sample_batch(const int16_t *data, size_t frames)
-{
+size_t CLibretro::core_audio_sample_batch(const int16_t *data, size_t frames){
     _audio.mix(data, frames);
     return frames;
 }
 
-bool CLibretro::savestate(TCHAR* filename, bool save)
-{
+bool CLibretro::savestate(TCHAR* filename, bool save){
     if (isEmulating)
     {
         size_t size = g_retro.retro_serialize_size();
@@ -399,7 +388,6 @@ bool CLibretro::savestate(TCHAR* filename, bool save)
                 fclose(Input);
                 Input = NULL;
                 return true;
-
             }
             else
             {
@@ -425,8 +413,7 @@ bool CLibretro::savestate(TCHAR* filename, bool save)
     return false;
 }
 
-bool CLibretro::savesram(TCHAR* filename, bool save)
-{
+bool CLibretro::savesram(TCHAR* filename, bool save){
     if (isEmulating)
     {
         size_t size = g_retro.retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
@@ -442,7 +429,6 @@ bool CLibretro::savesram(TCHAR* filename, bool save)
                 fclose(Input);
                 Input = NULL;
                 return true;
-
             }
             else
             {
@@ -462,11 +448,9 @@ bool CLibretro::savesram(TCHAR* filename, bool save)
     return false;
 }
 
-void CLibretro::reset()
-{
+void CLibretro::reset(){
     if (isEmulating)g_retro.retro_reset();
 }
-
 
 static void core_audio_sample(int16_t left, int16_t right) {
     CLibretro* lib = CLibretro::GetSingleton();
@@ -485,11 +469,12 @@ static size_t core_audio_sample_batch(const int16_t *data, size_t frames) {
 }
 
 bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_filename) {
+    TCHAR filez[MAX_PATH] = { 0 };
+    TCHAR core_handlepath[MAX_PATH] = { 0 };
 
     memset(&g_retro, 0, sizeof(g_retro));
     g_retro.handle = LoadLibrary(sofile);
     if (!g_retro.handle)return false;
-
 #define die() do { FreeLibrary(g_retro.handle); return false; } while(0)
 #define libload(name) GetProcAddress(g_retro.handle, name)
 #define load(name) if (!(*(void**)(&g_retro.#name)=(void*)libload(#name))) die()
@@ -524,11 +509,9 @@ bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_f
     load_sym(set_audio_sample, retro_set_audio_sample);
     load_sym(set_audio_sample_batch, retro_set_audio_sample_batch);
 
-    TCHAR filez[MAX_PATH] = { 0 };
     lstrcpy(filez, game_filename);
     PathStripPath(filez);
     PathRemoveExtension(filez);
-    TCHAR core_handlepath[MAX_PATH] = { 0 };
     GetModuleFileNameW(g_retro.handle, core_handlepath, sizeof(core_handlepath));
     PathRemoveExtension(core_handlepath);
     GetCurrentDirectory(MAX_PATH, sys_filename);
@@ -536,7 +519,6 @@ bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_f
     lstrcpy(sav_filename, sys_filename);
     PathAppend(sav_filename, filez);
     lstrcat(sav_filename, L".sav");
-
     lstrcpy(inputcfg_path, L"");
     lstrcpy(corevar_path, L"");
 
@@ -572,8 +554,7 @@ static void noop() {
 }
 
 CLibretro* CLibretro::m_Instance = 0;
-CLibretro* CLibretro::CreateInstance(HWND hwnd)
-{
+CLibretro* CLibretro::CreateInstance(HWND hwnd){
     if (0 == m_Instance)
     {
         m_Instance = new CLibretro();
@@ -582,30 +563,25 @@ CLibretro* CLibretro::CreateInstance(HWND hwnd)
     return m_Instance;
 }
 
-CLibretro* CLibretro::GetSingleton()
-{
+CLibretro* CLibretro::GetSingleton(){
     return m_Instance;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool CLibretro::running()
-{
+bool CLibretro::running(){
     return isEmulating;
 }
 
-CLibretro::CLibretro()
-{
+CLibretro::CLibretro(){
     isEmulating = false;
 }
 
-static DWORD WINAPI libretro_thread(void* Param)
-{
+static DWORD WINAPI libretro_thread(void* Param){
     CLibretro* This = (CLibretro*)Param;
     return This->ThreadStart();
 }
 
-DWORD CLibretro::ThreadStart(void)
-{
+DWORD CLibretro::ThreadStart(void){
     init_common();
     // Do stuff
     while (isEmulating)
@@ -634,32 +610,37 @@ DWORD CLibretro::ThreadStart(void)
     return 0;
 }
 
-CLibretro::~CLibretro(void)
-{
+CLibretro::~CLibretro(void){
     if (isEmulating)isEmulating = false;
     kill();
 }
 
-bool CLibretro::init_common()
-{
-    variables.clear();
+bool CLibretro::init_common(){
+    CHAR szFileName[MAX_PATH] = { 0 };
+    double refreshr = 0;
+    DEVMODE lpDevMode;
+    struct stat st;
     struct retro_system_info system = { 0 };
+    retro_system_av_info av = { 0 };
+    variables.clear();
+    memset(&lpDevMode, 0, sizeof(DEVMODE));
+    variables_changed = false;
+
     g_video = { 0 };
     g_video.hw.version_major = 3;
     g_video.hw.version_minor = 3;
     g_video.hw.context_type = RETRO_HW_CONTEXT_NONE;
     g_video.hw.context_reset = NULL;
     g_video.hw.context_destroy = NULL;
-    variables_changed = false;
+    
     if (!core_load(core_path, gamespec, rom_path))
     {
         printf("FAILED TO LOAD CORE!!!!!!!!!!!!!!!!!!");
         return false;
     }
-    CHAR szFileName[MAX_PATH] = { 0 };
+  
     string ansi = utf8_from_utf16(rom_path);
     strcpy(szFileName, ansi.c_str());
-    struct stat st;
     stat(szFileName, &st);
     info.path = szFileName;
     info.data = NULL;
@@ -685,14 +666,12 @@ bool CLibretro::init_common()
         printf("FAILED TO LOAD ROM!!!!!!!!!!!!!!!!!!");
         return false;
     }
-    retro_system_av_info av = { 0 };
     g_retro.retro_get_system_av_info(&av);
     ::video_configure(&av.geometry, emulator_hwnd);
-    double refreshr = 0;
-    DWM_TIMING_INFO timing_info = { 0 };
-    timing_info.cbSize = sizeof(timing_info);
-    DwmGetCompositionTimingInfo(NULL, &timing_info);
-    refreshr = timing_info.rateRefresh.uiNumerator;
+    if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {
+        refreshr = 60.0; // default value if cannot retrieve from user settings.
+    }
+    else refreshr = lpDevMode.dmDisplayFrequency;
     _audio.init(refreshr, av);
     lastTime = (double)milliseconds_now() / 1000;
     nbFrames = 0;
@@ -707,7 +686,6 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
     lstrcpy(rom_path, filename);
     lstrcpy(core_path, core_filename);
     threaded = mthreaded;
-    //  logfile = fopen("file.txt", "w");
     if (threaded)
     {
         thread_handle = CreateThread(NULL, 0, &libretro_thread, (void*)this, 0, &thread_id);
@@ -728,10 +706,7 @@ void CLibretro::run()
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         g_retro.retro_run();
-
         double currentTime = (double)milliseconds_now() / 1000;
-
-
         if (currentTime - lastTime >= 0.5) { // If last prinf() was more than 1 sec ago
                            // printf and reset timer
             TCHAR buffer[200] = { 0 };
@@ -741,7 +716,6 @@ void CLibretro::run()
             lastTime += 1.0;
         }
         nbFrames++;
-
     }
 }
 
@@ -762,13 +736,11 @@ void CLibretro::kill()
     }
     else
     {
-
         g_retro.retro_unload_game();
         g_retro.retro_deinit();
         if (info.data)
             free((void*)info.data);
         _audio.destroy();
-        //  fclose(logfile);
         video_deinit();
     }
 }

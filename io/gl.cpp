@@ -69,23 +69,21 @@ void ortho2d(float m[4][4], float left, float right, float bottom, float top) {
     m[3][1] = -(top + bottom) / (top - bottom);
 }
 GLuint compile_shader(unsigned type, unsigned count, const char **strings) {
+    GLint status;
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, count, strings, NULL);
     glCompileShader(shader);
-
-    GLint status;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-
     if (status == GL_FALSE) {
         char buffer[4096];
         glGetShaderInfoLog(shader, sizeof(buffer), NULL, buffer);
     }
-
     return shader;
 }
 
 
 void init_shaders() {
+    GLint status;
     GLuint vshader = compile_shader(GL_VERTEX_SHADER, 1, &g_vshader_src);
     GLuint fshader = compile_shader(GL_FRAGMENT_SHADER, 1, &g_fshader_src);
     GLuint program = glCreateProgram();
@@ -93,17 +91,13 @@ void init_shaders() {
     glAttachShader(program, vshader);
     glAttachShader(program, fshader);
     glLinkProgram(program);
-
     glDeleteShader(vshader);
     glDeleteShader(fshader);
-
     glValidateProgram(program);
-
-    GLint status;
     glGetProgramiv(program, GL_LINK_STATUS, &status);
 
     if (status == GL_FALSE) {
-        char buffer[4096];
+        char buffer[4096] = { 0 };
         glGetProgramInfoLog(program, sizeof(buffer), NULL, buffer);
     }
 
@@ -115,9 +109,7 @@ void init_shaders() {
 
     glGenVertexArrays(1, &g_shader.vao);
     glGenBuffers(1, &g_shader.vbo);
-
     glUseProgram(g_shader.program);
-
     glUniform1i(g_shader.u_tex, 0);
 
     float m[4][4];
@@ -127,7 +119,6 @@ void init_shaders() {
         ortho2d(m, -1, 1, -1, 1);
 
     glUniformMatrix4fv(g_shader.u_mvp, 1, GL_FALSE, (float*)m);
-
     glUseProgram(0);
 }
 
@@ -136,7 +127,6 @@ void refresh_vertex_data() {
 
     float bottom = (float)g_video.base_h / g_video.tex_h;
     float right = (float)g_video.base_w / g_video.tex_w;
-
 
     typedef struct
     {
@@ -155,9 +145,7 @@ void refresh_vertex_data() {
         1.0f,  1.0f,0., right,  0.0f,  // right-top
     };
 
-
     glBindVertexArray(g_shader.vao);
-
     glBindBuffer(GL_ARRAY_BUFFER, g_shader.vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data) * 4, vert, GL_STATIC_DRAW);
     glEnableVertexAttribArray(g_shader.i_pos);
@@ -185,8 +173,6 @@ void init_framebuffer(int width, int height)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, g_video.hw.stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, g_video.rbo_id);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
-
-
     glCheckFramebufferStatus(GL_FRAMEBUFFER);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -220,7 +206,6 @@ void create_window(int width, int height, HWND hwnd) {
 
     g_video.hwnd = hwnd;
     g_video.hDC = GetDC(hwnd);
-
     unsigned int	PixelFormat;
     PixelFormat = ChoosePixelFormat(g_video.hDC, &pfd);
     SetPixelFormat(g_video.hDC, PixelFormat, &pfd);

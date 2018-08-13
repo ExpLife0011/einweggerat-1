@@ -8,10 +8,6 @@
 #include "io/input.h"
 #include "io/audio.h"
 
-
-
-
-
 namespace std
 {
   typedef wstring        tstring;
@@ -19,13 +15,15 @@ namespace std
   typedef wostringstream tostringstream;
 }
 
-
-
 class CLibretro
 {
-private:
   static	CLibretro* m_Instance;
 public:
+   CLibretro();
+   ~CLibretro();
+   static CLibretro* CreateInstance(HWND hwnd);
+   static	CLibretro* GetSingleton();
+
   struct core_vars
   {
     char name[100];
@@ -40,18 +38,20 @@ public:
   TCHAR sys_filename[MAX_PATH];
   TCHAR sav_filename[MAX_PATH];
   TCHAR corevar_path[MAX_PATH];
+  Audio  _audio;
   std::vector<core_vars> variables;
+  struct retro_game_info info;
   bool variables_changed;
   HANDLE thread_handle;
   DWORD thread_id;
   HWND emulator_hwnd;
-  struct retro_game_info info;
-  DWORD ThreadStart();
-  static CLibretro* CreateInstance(HWND hwnd);
-  static	CLibretro* GetSingleton();
-  CLibretro();
-  ~CLibretro();
   DWORD rate;
+  double lastTime;
+  int nbFrames;
+  bool threaded;
+  BOOL isEmulating;
+
+  DWORD ThreadStart();
   bool running();
   bool loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecificoptions, bool mthreaded = false);
   void render();
@@ -63,15 +63,8 @@ public:
   bool savestate(TCHAR* filename, bool save = false);
   bool savesram(TCHAR* filename, bool save = false);
   void kill();
-  BOOL isEmulating;
   void core_audio_sample(int16_t left, int16_t right);
   size_t core_audio_sample_batch(const int16_t *data, size_t frames);
-  Audio  _audio;
-  double lastTime;
-  int nbFrames;
-  bool threaded;
-
-  FILE * logfile;
 };
 
 

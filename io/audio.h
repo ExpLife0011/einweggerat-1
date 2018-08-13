@@ -60,6 +60,21 @@ extern "C" {
    {
 
    public:
+       mal_context context;
+       mal_device device;
+       unsigned client_rate;
+       fifo_buffer* _fifo;
+       float fps;
+       double system_fps;
+       double skew;
+       double system_rate;
+       double resamp_original;
+       void* resample;
+       float *input_float;
+       float *output_float;
+       slock_t *lockz;
+       scond_t *condz;
+
       bool init(double refreshra, retro_system_av_info av);
       void destroy();
       void reset();
@@ -67,20 +82,7 @@ extern "C" {
       int get_clientrate();
       void mix(const int16_t* samples, size_t sample_count);
       mal_uint32 fill_buffer(uint8_t* pSamples, mal_uint32 samplecount);
-      mal_context context;
-      mal_device device;
-      unsigned client_rate;
-      fifo_buffer* _fifo;
-      float fps;
-      double system_fps;
-      double skew;
-      double system_rate;
-      double resamp_original;
-      void* resample;
-      float *input_float;
-      float *output_float;
-      slock_t *lockz;
-      scond_t *condz;
+      
    };
 
 

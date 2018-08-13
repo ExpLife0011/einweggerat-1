@@ -177,20 +177,20 @@ void Audio::sleeplil()
 
 void Audio::mix(const int16_t* samples, size_t size)
 {
+    struct resampler_data src_data = { 0 };
+    size_t written = 0;
     uint32_t in_len = size * sizeof(int16_t);
     double maxdelta = 0.005;
     auto bufferlevel = [this]() {return double((_fifo->size - (int)fifo_write_avail(this->_fifo)) / this->_fifo->size); };
     int newInputFrequency = ((1.0 - maxdelta) + 2.0 * (double)bufferlevel() * maxdelta) * system_rate;
     float drc_ratio = (float)client_rate / (float)newInputFrequency;
     mal_pcm_s16_to_f32(input_float, samples, in_len, mal_dither_mode_triangle);
-    struct resampler_data src_data = { 0 };
     src_data.input_frames = size;
     src_data.ratio = drc_ratio;
     src_data.data_in = input_float;
     src_data.data_out = output_float;
     resampler_sinc_process(resample, &src_data);
     int out_len = src_data.output_frames * 2 * sizeof(float);
-    size_t written = 0;
     while (written < out_len)
     {
         slock_lock(lockz);

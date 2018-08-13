@@ -72,12 +72,9 @@ typedef struct rarch_sinc_resampler
 	float *phase_table;
 	float *buffer_l;
 	float *buffer_r;
-
 	unsigned taps;
-
 	unsigned ptr;
 	uint32_t time;
-
 	/* A buffer for phase_table, buffer_l and buffer_r
 	* are created in a single calloc().
 	* Ensure that we get as good cache locality as we can hope for. */
@@ -96,7 +93,6 @@ static __forceinline double besseli0(double x)
    double x_pow = 1.0;
    double two_div_pow = 1.0;
    double x_sqr = x * x;
-
    /* Approximate. This is an infinite sum.
    * Luckily, it converges rather fast. */
    for (i = 0; i < 18; i++)
@@ -108,7 +104,6 @@ static __forceinline double besseli0(double x)
       two_div_pow *= 0.25;
       factorial *= factorial_mult;
    }
-
    return sum;
 }
 
@@ -136,12 +131,10 @@ void *memalign_alloc(size_t boundary, size_t size)
    void *ptr = (void*)malloc(boundary + size + sizeof(uintptr_t));
    if (!ptr)
       return NULL;
-
    addr = ((uintptr_t)ptr + sizeof(uintptr_t) + boundary)
       & ~(boundary - 1);
    place = (void**)addr;
    place[-1] = ptr;
-
    return (void*)addr;
 }
 
@@ -150,21 +143,19 @@ void memalign_free(void *ptr)
    void **p = NULL;
    if (!ptr)
       return;
-
    p = (void**)ptr;
    free(p[-1]);
 }
 
 void resampler_sinc_process(void *re_, struct resampler_data *data)
 {
+    size_t out_frames = 0;
 	rarch_sinc_resampler_t *resamp = (rarch_sinc_resampler_t*)re_;
-
 	uint32_t ratio = PHASES / data->ratio;
 	const float *input = data->data_in;
 	float *output = data->data_out;
 	size_t frames = data->input_frames;
-	size_t out_frames = 0;
-
+	
 	while (frames)
 	{
 		while (frames && resamp->time >= PHASES)

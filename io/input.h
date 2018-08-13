@@ -31,35 +31,25 @@ public:
   dinput                * di;
   bind_list             * bl;
   static	input* m_Instance;
+
+
   static input* CreateInstance(HINSTANCE hInstance, HWND hWnd);
   static	input* GetSingleton();
-
   const char* open(HINSTANCE hInstance, HWND hWnd);
   void close();
-
   // configuration
   const char* load(Data_Reader &);
-
   const char* save(Data_Writer &);
-
   // input_i_dinput
   void poll();
   bool getbutton(int which, int16_t & value, int & retro_id, bool & isanalog);
-
   unsigned read();
-
   void strobe();
-
   int get_speed();
-
   void set_speed(int);
-
   void set_paused(bool);
-
   void clear_binds();
-
   void set_focus(bool is_focused);
-
   void refocus(void * hwnd);
 };
 

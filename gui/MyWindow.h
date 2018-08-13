@@ -15,18 +15,11 @@
 #include "../3rdparty/libretro.h"
 #include <shlwapi.h>
 #include "../3rdparty/cmdline.h"
-#include <dwmapi.h>
-#pragma comment (lib,"dwmapi.lib")
 
 using namespace std;
 using namespace utf8util;
 
-
 #include "Options.h"
-#pragma comment(lib, "shlwapi.lib")
-
-
-
 #include "../gitver.h"
 class CAboutDlg : public CDialogImpl<CAboutDlg>
 {
@@ -199,7 +192,6 @@ public:
 			pLoop->AddMessageFilter(this);
 			RegisterDropTarget();
 			SetRedraw(FALSE);
-			DwmEnableMMCSS(TRUE);
 			return 0;
 		}
 
@@ -251,7 +243,6 @@ public:
 
 		LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
-			DwmEnableMMCSS(FALSE);
 			if (emulator)emulator->kill();
 			if (input_device)input_device->close();
 			CMessageLoop* pLoop = _Module.GetMessageLoop();
