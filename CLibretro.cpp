@@ -321,12 +321,10 @@ static void core_input_poll(void) {
 static int16_t core_input_state(unsigned port, unsigned device, unsigned index, unsigned id) {
     if (port != 0)return 0;
     input *input_device = input::GetSingleton();
-    if (input_device && input_device->bl != NULL)
-    {
+  
+        if (device == RETRO_DEVICE_ANALOG || device == RETRO_DEVICE_JOYPAD){
+        if (input_device != NULL && input_device->bl != NULL){
         for (unsigned int i = 0; i < input_device->bl->get_count(); i++) {
-            {
-                if (device == RETRO_DEVICE_ANALOG || device == RETRO_DEVICE_JOYPAD)
-                {
                     int retro_id = 0;
                     int16_t value = 0;
                     bool isanalog = false;
@@ -357,7 +355,8 @@ static int16_t core_input_state(unsigned port, unsigned device, unsigned index, 
                 }
             }
         }
-    }
+
+
     return 0;
 }
 
