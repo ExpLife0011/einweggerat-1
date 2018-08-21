@@ -229,6 +229,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="3rdparty\glad.c" />
     <ClCompile Include="3rdparty\resampler.c" />
     <ClCompile Include="3rdparty\rthreads.c" />
     <ClCompile Include="CLibretro.cpp" />
@@ -246,7 +247,6 @@
     <ClCompile Include="io\Data_Reader.cpp" />
     <ClCompile Include="io\dinput.cpp" />
     <ClCompile Include="io\gl.cpp" />
-    <ClCompile Include="io\glad.c" />
     <ClCompile Include="io\guid_container.cpp" />
     <ClCompile Include="io\input.cpp" />
     <ClCompile Include="stdafx.cpp">

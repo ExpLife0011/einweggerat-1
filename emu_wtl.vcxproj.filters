@@ -21,9 +21,6 @@
     <ClCompile Include="io\gl.cpp">
       <Filter>io</Filter>
     </ClCompile>
-    <ClCompile Include="io\glad.c">
-      <Filter>io</Filter>
-    </ClCompile>
     <ClCompile Include="io\guid_container.cpp">
       <Filter>io</Filter>
     </ClCompile>
@@ -43,6 +40,9 @@
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\rthreads.c">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\glad.c">
       <Filter>io</Filter>
     </ClCompile>
   </ItemGroup>
