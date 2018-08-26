@@ -641,7 +641,7 @@ bool CLibretro::init_common(){
     string ansi = utf8_from_utf16(rom_path);
     strcpy(szFileName, ansi.c_str());
     stat(szFileName, &st);
-    info.path = szFileName;
+    info.path = "";
     info.data = NULL;
     info.size = st.st_size;
     info.meta = "";

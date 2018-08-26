@@ -91,6 +91,8 @@ GLAPI int gladLoadGL(void);
 
 GLAPI void* get_proc(const char *namez);
 
+GLAPI void close_gl();
+
 
 GLAPI int gladLoadGLLoader(GLADloadproc);
 

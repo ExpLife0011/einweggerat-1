@@ -463,5 +463,6 @@ void video_deinit() {
     }
 
     if (g_video.hDC) ReleaseDC(g_video.hwnd, g_video.hDC);
+    close_gl();
 
 }
