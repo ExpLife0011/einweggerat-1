@@ -36,6 +36,8 @@ static struct {
     size_t(*retro_get_memory_size)(unsigned id);
     void(*retro_unload_game)(void);
 } g_retro;
+static struct retro_frame_time_callback runloop_frame_time;
+static struct retro_audio_callback audio_callback;
 
 static void core_unload() {
     if (g_retro.initialized)
@@ -271,6 +273,19 @@ bool core_environment(unsigned cmd, void *data) {
         return true;
     }
     break;
+
+    case RETRO_ENVIRONMENT_SET_AUDIO_CALLBACK: {
+        struct retro_audio_callback *audio_cb = (struct retro_audio_callback*)data;
+        audio_callback = *audio_cb;
+        return true;
+    }
+
+    case RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK: {
+        const struct retro_frame_time_callback *frame_time =
+            (const struct retro_frame_time_callback*)data;
+        runloop_frame_time = *frame_time;
+        break;
+    }
 
     case RETRO_ENVIRONMENT_GET_VARIABLE:
     {
@@ -614,11 +629,22 @@ CLibretro::~CLibretro(void){
     kill();
 }
 
+long GetFileSize(const TCHAR *fileName)
+{
+    BOOL                        fOk;
+    WIN32_FILE_ATTRIBUTE_DATA   fileInfo;
+    if (NULL == fileName)
+        return -1;
+    fOk = GetFileAttributesEx(fileName, GetFileExInfoStandard, (void*)&fileInfo);
+    if (!fOk)
+        return -1;
+    assert(0 == fileInfo.nFileSizeHigh);
+    return (long)fileInfo.nFileSizeLow;
+}
+
 bool CLibretro::init_common(){
-    CHAR szFileName[MAX_PATH] = { 0 };
     double refreshr = 0;
     DEVMODE lpDevMode;
-    struct stat st;
     struct retro_system_info system = { 0 };
     retro_system_av_info av = { 0 };
     variables.clear();
@@ -626,8 +652,8 @@ bool CLibretro::init_common(){
     variables_changed = false;
 
     g_video = { 0 };
-    g_video.hw.version_major = 3;
-    g_video.hw.version_minor = 3;
+    g_video.hw.version_major = 4;
+    g_video.hw.version_minor = 5;
     g_video.hw.context_type = RETRO_HW_CONTEXT_NONE;
     g_video.hw.context_reset = NULL;
     g_video.hw.context_destroy = NULL;
@@ -637,13 +663,13 @@ bool CLibretro::init_common(){
         printf("FAILED TO LOAD CORE!!!!!!!!!!!!!!!!!!");
         return false;
     }
-  
+
     string ansi = utf8_from_utf16(rom_path);
-    strcpy(szFileName, ansi.c_str());
-    stat(szFileName, &st);
-    info.path = "";
+    const char* rompath = ansi.c_str();
+    info = { rompath, 0 };
+    info.path = rompath;
     info.data = NULL;
-    info.size = st.st_size;
+    info.size = GetFileSize(rom_path);
     info.meta = "";
     g_retro.retro_get_system_info(&system);
     if (!system.need_fullpath) {
@@ -672,9 +698,13 @@ bool CLibretro::init_common(){
     }
     else refreshr = lpDevMode.dmDisplayFrequency;
     _audio.init(refreshr, av);
+    if (audio_callback.set_state) {
+        audio_callback.set_state(true);
+    }
     lastTime = (double)milliseconds_now() / 1000;
     nbFrames = 0;
     isEmulating = true;
+    runloop_frame_time_last = 0;
     return true;
 }
 
@@ -701,6 +731,20 @@ void CLibretro::run()
 {
     if (!threaded)
     {
+        if (runloop_frame_time.callback) {
+            retro_time_t current = milliseconds_now();
+            retro_time_t delta = current - runloop_frame_time_last;
+
+            if (!runloop_frame_time_last)
+                delta = runloop_frame_time.reference;
+            runloop_frame_time_last = current;
+            runloop_frame_time.callback(delta * 1000);
+        }
+
+        if (audio_callback.callback) {
+            audio_callback.callback();
+        }
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
