@@ -104,7 +104,7 @@ int Audio::get_clientrate()
     pDevice->OpenPropertyStore(STGM_READ, &store);
     store->GetValue(PKEY_AudioEngine_DeviceFormat, &prop);
     deviceFormatProperties = (PWAVEFORMATEX)prop.blob.pBlobData;
-    return deviceFormatProperties->nSamplesPerSec;
+    return  deviceFormatProperties->nSamplesPerSec != 0 ?deviceFormatProperties->nSamplesPerSec:44100;
 }
 
 bool Audio::init(double refreshra, retro_system_av_info av)
@@ -138,7 +138,7 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     _fifo = fifo_new(sampsize); //number of bytes
     output_float = new float[sampsize * 2]; //spare space for resampler
     input_float = new float[FRAME_COUNT * 4];
-    mal_device_start(&device);
+    if (mal_device_start(&device) != MAL_SUCCESS)return false;
     frame_limit_last_time = microseconds_now();
     frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / (av.timing.fps));
     return true;

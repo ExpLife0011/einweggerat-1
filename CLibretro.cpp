@@ -587,6 +587,7 @@ bool CLibretro::running(){
 }
 
 CLibretro::CLibretro(){
+    threaded = false;
     isEmulating = false;
 }
 
@@ -698,6 +699,7 @@ bool CLibretro::init_common(){
     }
     else refreshr = lpDevMode.dmDisplayFrequency;
     _audio.init(refreshr, av);
+    threaded = false;
     if (audio_callback.set_state) {
         audio_callback.set_state(true);
     }
