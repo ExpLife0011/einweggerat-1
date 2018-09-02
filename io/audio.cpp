@@ -1,4 +1,5 @@
 #define MAL_IMPLEMENTATION
+#include <windows.h>
 #include "audio.h"
 #include <initguid.h>
 #include <Mmdeviceapi.h>
@@ -124,10 +125,20 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     client_rate = get_clientrate();
     resamp_original = (client_rate / system_rate);
     resample = resampler_sinc_init(resamp_original);
-    if (mal_context_init(NULL, 0, NULL, &context) != MAL_SUCCESS) {
+    mal_context_config contextConfig = mal_context_config_init(NULL);
+    mal_backend backends[] = {
+        mal_backend_wasapi,
+        mal_backend_dsound,
+        mal_backend_winmm,
+        mal_backend_null    // Lowest priority.
+    };
+
+    if(mal_context_init(backends, sizeof(backends) / sizeof(backends[0]), &contextConfig, &context) != MAL_SUCCESS)
+    {
         printf("Failed to initialize context.");
         return false;
-    }
+    };
+
     mal_device_config config = mal_device_config_init_playback(mal_format_f32, 2, client_rate, audio_callback);
     config.bufferSizeInFrames = (FRAME_COUNT);
     if (mal_device_init(&context, mal_device_type_playback, NULL, &config, this, &device) != MAL_SUCCESS) {
