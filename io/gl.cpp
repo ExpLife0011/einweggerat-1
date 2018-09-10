@@ -209,41 +209,8 @@ void create_window(int width, int height, HWND hwnd) {
     unsigned int	PixelFormat;
     PixelFormat = ChoosePixelFormat(g_video.hDC, &pfd);
     SetPixelFormat(g_video.hDC, PixelFormat, &pfd);
-    if (g_video.hw.context_type == RETRO_HW_CONTEXT_OPENGL_CORE)
-    {
-        GLint attribs_core[] =
-        {
-            // Here we ask for OpenGL 4.5
-            0x2091, g_video.hw.version_major,
-            0x2092, g_video.hw.version_minor,
-            // Uncomment this for forward compatibility mode
-            //0x2094, 0x0002,
-            // Uncomment this for Compatibility profile
-            // 0x9126, 0x9126,
-            // We are using Core profile here
-            0x9126, 0x00000001,
-            0
-        };
-        typedef HGLRC(APIENTRY * PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC, HGLRC hShareContext, const int *attribList);
-        static PFNWGLCREATECONTEXTATTRIBSARBPROC pfnCreateContextAttribsARB = 0;
-        HGLRC hTempContext;
-        if (!(hTempContext = wglCreateContext(g_video.hDC)))
-            return;
-        if (!wglMakeCurrent(g_video.hDC, hTempContext))
-        {
-            wglDeleteContext(hTempContext);
-            return;
-        }
-        pfnCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(wglGetProcAddress("wglCreateContextAttribsARB"));
-        if (!(g_video.hRC = pfnCreateContextAttribsARB(g_video.hDC, 0, attribs_core)))return;
-        if (!wglMakeCurrent(g_video.hDC, g_video.hRC))return;
-        wglDeleteContext(hTempContext);
-    }
-    else
-    {
-        if (!(g_video.hRC = wglCreateContext(g_video.hDC)))return;
-        if (!wglMakeCurrent(g_video.hDC, g_video.hRC))return;
-    }
+    if (!(g_video.hRC = wglCreateContext(g_video.hDC)))return;
+    if (!wglMakeCurrent(g_video.hDC, g_video.hRC))return;
 
     gladLoadGL();
     init_shaders();
@@ -390,6 +357,7 @@ bool video_set_pixel_format(unsigned format) {
 
 
 void video_refresh(const void *data, unsigned width, unsigned height, unsigned pitch) {
+    if (data == NULL) return;
     if (g_video.base_w != width || g_video.base_h != height)
     {
         g_video.base_h = height;
@@ -397,6 +365,7 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
 
         refresh_vertex_data();
     }
+   
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
