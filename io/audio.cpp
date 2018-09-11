@@ -91,23 +91,6 @@ long long microseconds_now() {
     }
 }
 
-int Audio::get_clientrate()
-{
-    HRESULT hr;
-    IMMDevice * pDevice = NULL;
-    IMMDeviceEnumerator * pEnumerator = NULL;
-    IPropertyStore* store = nullptr;
-    PWAVEFORMATEX deviceFormatProperties;
-    PROPVARIANT prop;
-    CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (LPVOID *)&pEnumerator);
-    // get default audio endpoint
-    pEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &pDevice);
-    pDevice->OpenPropertyStore(STGM_READ, &store);
-    store->GetValue(PKEY_AudioEngine_DeviceFormat, &prop);
-    deviceFormatProperties = (PWAVEFORMATEX)prop.blob.pBlobData;
-    return  deviceFormatProperties->nSamplesPerSec != 0 ?deviceFormatProperties->nSamplesPerSec:44100;
-}
-
 bool Audio::init(double refreshra, retro_system_av_info av)
 {
     condz = scond_new();
@@ -122,9 +105,6 @@ bool Audio::init(double refreshra, retro_system_av_info av)
         refreshra /= 4.0;
     if (fabs(1.0f - system_fps / refreshra) <= 0.05)
         system_rate *= (refreshra / system_fps);
-    client_rate = get_clientrate();
-    resamp_original = (client_rate / system_rate);
-    resample = resampler_sinc_init(resamp_original);
     mal_context_config contextConfig = mal_context_config_init(NULL);
     mal_backend backends[] = {
         mal_backend_wasapi,
@@ -139,12 +119,15 @@ bool Audio::init(double refreshra, retro_system_av_info av)
         return false;
     };
 
-    mal_device_config config = mal_device_config_init_playback(mal_format_f32, 2, client_rate, audio_callback);
+    mal_device_config config = mal_device_config_init_playback(mal_format_f32, 2, 0, audio_callback);
     config.bufferSizeInFrames = (FRAME_COUNT);
     if (mal_device_init(&context, mal_device_type_playback, NULL, &config, this, &device) != MAL_SUCCESS) {
         mal_context_uninit(&context);
         return false;
     }
+    client_rate = device.sampleRate;
+    resamp_original = (client_rate / system_rate);
+    resample = resampler_sinc_init(resamp_original);
     size_t sampsize = mal_device_get_buffer_size_in_bytes(&device);
     _fifo = fifo_new(sampsize); //number of bytes
     output_float = new float[sampsize * 2]; //spare space for resampler
