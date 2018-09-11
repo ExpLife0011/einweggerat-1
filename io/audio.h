@@ -2,6 +2,7 @@
 #define AUDIO_H
 
 #include <list>
+#include "../stdafx.h"
 #include "../3rdparty/mini_al.h"
 #include "../3rdparty/libretro.h"
 #include "../3rdparty/rthreads.h"

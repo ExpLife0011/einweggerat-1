@@ -6,7 +6,7 @@
 #pragma once
 
 #include "targetver.h"
-
+#define WIN32
 #define STRICT
 #define _WTL_USE_CSTRING
 #include <windows.h>

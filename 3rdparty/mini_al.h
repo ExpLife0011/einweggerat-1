@@ -254,8 +254,12 @@ extern "C" {
 
 // Platform/backend detection.
 #ifdef _WIN32
-#define MAL_WIN32
-#define MAL_WIN32_DESKTOP
+    #define MAL_WIN32
+    #if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+        #define MAL_WIN32_UWP
+    #else
+        #define MAL_WIN32_DESKTOP
+    #endif
 #else
     #define MAL_POSIX
     #include <pthread.h>    // Unfortunate #include, but needed for pthread_t, pthread_mutex_t and pthread_cond_t types.
