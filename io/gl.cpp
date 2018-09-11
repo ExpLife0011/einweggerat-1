@@ -180,7 +180,11 @@ void init_framebuffer(int width, int height)
 }
 
 
-void resize_cb(int w, int h) {
+void resize_cb() {
+    RECT clientRect;
+    GetClientRect(g_video.hwnd, &clientRect);
+    int32_t w = clientRect.right - clientRect.left;
+    int32_t h = clientRect.bottom - clientRect.top;
     // figure out the largest area that fits in this resolution at the desired aspect ratio
     if (g_video.last_w != w && w ||
         g_video.last_h != h && h)
@@ -217,12 +221,8 @@ void create_window(int width, int height, HWND hwnd) {
 
     typedef bool (APIENTRY *PFNWGLSWAPINTERVALFARPROC)(int);
     PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT = 0;
-    wglSwapIntervalEXT =
-        (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
-    if (wglSwapIntervalEXT)
-        wglSwapIntervalEXT(0);
-
-    //if (g_video.hw.context_reset)g_video.hw.context_reset();
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
+    if (wglSwapIntervalEXT) wglSwapIntervalEXT(0);
     g_win = true;
     g_video.last_w = 0;
     g_video.last_h = 0;
@@ -379,10 +379,10 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
             g_video.pixtype, g_video.pixfmt, data);
     }
 
-    RECT clientRect;
+   
 
-    GetClientRect(g_video.hwnd, &clientRect);
-    resize_cb(clientRect.right, clientRect.bottom);
+   
+    resize_cb();
 
     glClear(GL_COLOR_BUFFER_BIT);
 
