@@ -26,10 +26,10 @@ public:
 
   struct core_vars
   {
-    char name[100];
-    char var[100];
-    char description[256];
-    char usevars[256];
+    char name[1024];
+    char var[1024];
+    char description[1024];
+    char usevars[1024];
   };
   bool gamespec;
   TCHAR core_path[MAX_PATH];

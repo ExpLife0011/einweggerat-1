@@ -71,9 +71,8 @@ void init_coresettings(retro_variable *var){
     CLibretro * retro = CLibretro::GetSingleton();
     FILE *fp = NULL;
     std::vector<CLibretro::core_vars> variables1;
-    variables1.clear();
     //set up core variable information and default key settings
-    while (var != NULL && var->key != NULL)
+    while (var->value != NULL)
     {
         CLibretro::core_vars vars_struct = { 0 };
         strcpy(vars_struct.name, var->key);
@@ -92,7 +91,7 @@ void init_coresettings(retro_variable *var){
             strncpy(vars_struct.var, pch, str2 - pch);
         }
         variables1.push_back(vars_struct);
-        ++var;
+        var++;
     }
 
     fp = _wfopen(retro->corevar_path, L"r");
