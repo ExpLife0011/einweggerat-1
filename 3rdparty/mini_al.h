@@ -1,5 +1,5 @@
 // Audio playback and capture library. Public domain. See "unlicense" statement at the end of this file.
-// mini_al - v0.8.6 - 2018-08-26
+// mini_al - v0.8.7 - 2018-09-12
 //
 // David Reid - davidreidsoftware@gmail.com
 
@@ -255,7 +255,7 @@ extern "C" {
 // Platform/backend detection.
 #ifdef _WIN32
     #define MAL_WIN32
-    #if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
+    #if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
         #define MAL_WIN32_UWP
     #else
         #define MAL_WIN32_DESKTOP
@@ -354,9 +354,6 @@ typedef void* mal_handle;
 typedef void* mal_ptr;
 typedef void (* mal_proc)(void);
 
-typedef struct mal_context mal_context;
-typedef struct mal_device mal_device;
-
 #if defined(_MSC_VER) && !defined(_WCHAR_T_DEFINED)
 typedef mal_uint16 wchar_t;
 #endif
@@ -411,6 +408,8 @@ typedef mal_uint16 wchar_t;
 #define MAL_LOG_LEVEL           MAL_LOG_LEVEL_ERROR
 #endif
 
+typedef struct mal_context mal_context;
+typedef struct mal_device mal_device;
 
 typedef mal_uint8 mal_channel;
 #define MAL_CHANNEL_NONE                                0
@@ -28298,6 +28297,9 @@ mal_uint64 mal_sine_wave_read_ex(mal_sine_wave* pSineWave, mal_uint64 frameCount
 
 // REVISION HISTORY
 // ================
+//
+// v0.8.7 - 2018-09-12
+//   - Fix a bug with UWP detection.
 //
 // v0.8.6 - 2018-08-26
 //   - Automatically switch the internal device when the default device is unplugged. Note that this is still in the
