@@ -26,10 +26,10 @@ public:
 
   struct core_vars
   {
-    char name[1024];
-    char var[1024];
-    char description[1024];
-    char usevars[1024];
+    std::string name;
+    std::string var;
+    std::string description;
+    std::string usevars;
   };
   bool gamespec;
   TCHAR core_path[MAX_PATH];

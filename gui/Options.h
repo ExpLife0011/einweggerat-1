@@ -468,7 +468,7 @@ public:
             {
                wstring var = szValue;
                string var2 = ws2s(var);
-               strcpy(retro->variables[i].var, var2.c_str());
+               retro->variables[i].var = var2;
             }
 
          }
@@ -485,7 +485,7 @@ public:
             if (lstrcmp(str.c_str(), str2.c_str()) == 0)
             {
                const char* check = vValue.boolVal ? "enabled" : "disabled";
-               strcpy(retro->variables[i].var, check);
+               retro->variables[i].var=check;
             }
 
          }
@@ -505,15 +505,15 @@ public:
 
       for (int i = 0; i < retro->variables.size(); i++)
       {
-         string str = retro->variables[i].description;
-         wstring st2 = s2ws(str);
+         string descript = retro->variables[i].description;
+         wstring descript_w = s2ws(descript);
          string usedv = retro->variables[i].usevars;
-         string var = retro->variables[i].var;
+         string vars = retro->variables[i].var;
          wstring varname = s2ws(retro->variables[i].name);
-         m_grid.InsertItem(i, PropCreateReadOnlyItem(_T(""), st2.c_str()));
+         m_grid.InsertItem(i, PropCreateReadOnlyItem(_T(""), descript_w.c_str()));
          if (strcmp(usedv.c_str(), "enabled|disabled") == 0 || strcmp(usedv.c_str(), "disabled|enabled") == 0)
          {
-            bool check = strstr((char*)var.c_str(), "enabled");
+            bool check = strstr((char*)vars.c_str(), "enabled");
             m_grid.SetSubItem(i, 1, PropCreateCheckButton(varname.c_str(), check));
          }
          else
@@ -521,7 +521,7 @@ public:
 
             vector <wstring> colour;
             colour.clear();
-            char *pch = (char*)retro->variables[i].usevars;
+            char *pch = (char*)retro->variables[i].usevars.c_str();
             while (pch != NULL)
             {
                char val[255] = { 0 };
@@ -576,8 +576,8 @@ public:
       FILE *fp = NULL;
       ini_t* ini = ini_create(NULL);
       for (int i = 0; i < retro->variables.size(); i++) {
-         ini_property_add(ini, INI_GLOBAL_SECTION, retro->variables[i].name, strlen(retro->variables[i].name), retro->variables[i].var,
-            strlen(retro->variables[i].var));
+         ini_property_add(ini, INI_GLOBAL_SECTION, retro->variables[i].name.c_str(), strlen(retro->variables[i].name.c_str()), retro->variables[i].var.c_str(),
+            strlen(retro->variables[i].var.c_str()));
       }
       int size = ini_save(ini, NULL, 0); // Find the size needed
       char* data = (char*)malloc(size);
