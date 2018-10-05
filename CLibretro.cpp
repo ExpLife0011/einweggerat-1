@@ -390,37 +390,27 @@ bool CLibretro::savestate(TCHAR* filename, bool save){
         size_t size = g_retro.retro_serialize_size();
         if (size)
         {
+            FILE *Input = _wfopen(filename, save?L"wb":L"rb");
+            BYTE *Memory = (BYTE *)malloc(size);
+            if (!Input)return false;
             if (save)
             {
-                FILE *Input = _wfopen(filename, L"wb");
-                if (!Input)return false;
                 // Get the filesize
-                BYTE *Memory = (BYTE *)malloc(size);
                 g_retro.retro_serialize(Memory, size);
                 if (Memory)fwrite(Memory, 1, size, Input);
-                fclose(Input);
-                Input = NULL;
-                return true;
             }
             else
             {
-                FILE *Input = _wfopen(filename, L"rb");
-                if (!Input)return false;
                 fseek(Input, 0, SEEK_END);
                 int Size = ftell(Input);
-                fseek(Input, 0, SEEK_SET);
-                BYTE *Memory = (BYTE *)malloc(Size);
-                if (!Memory)
-                {
-                    fclose(Input);
-                    return false;
-                }
+                rewind(Input);
                 fread(Memory, 1, Size, Input);
                 g_retro.retro_unserialize(Memory, size);
-                fclose(Input);
-                Input = NULL;
-                return true;
             }
+            free(Memory);
+            fclose(Input);
+            Input = NULL;
+            return true;
         }
     }
     return false;
