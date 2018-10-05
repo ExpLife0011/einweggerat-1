@@ -432,30 +432,13 @@ bool CLibretro::savesram(TCHAR* filename, bool save){
         size_t size = g_retro.retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
         if (size)
         {
-            if (save)
-            {
-                FILE *Input = _wfopen(filename, L"wb");
-                if (!Input) return(NULL);
-                // Get the filesize
-                BYTE *Memory = (BYTE *)g_retro.retro_get_memory_data(RETRO_MEMORY_SAVE_RAM);
-                fwrite(Memory, 1, size, Input);
-                fclose(Input);
-                Input = NULL;
-                return true;
-            }
-            else
-            {
-                FILE *Input = _wfopen(filename, L"rb");
-                if (!Input) return(NULL);
-                fseek(Input, 0, SEEK_END);
-                int Size = ftell(Input);
-                fseek(Input, 0, SEEK_SET);
-                BYTE *Memory_load = (BYTE *)g_retro.retro_get_memory_data(RETRO_MEMORY_SAVE_RAM);
-                fread(Memory_load, 1, Size, Input);
-                fclose(Input);
-                Input = NULL;
-                return true;
-            }
+            FILE *Input = _wfopen(filename,save? L"wb" : L"rb");
+            if (!Input) return(NULL);
+            BYTE *Memory = (BYTE *)g_retro.retro_get_memory_data(RETRO_MEMORY_SAVE_RAM);
+            save ? fwrite(Memory, 1, size, Input) : fread(Memory, 1, size, Input);
+            fclose(Input);
+            Input = NULL;
+            return true;
         }
     }
     return false;
