@@ -705,7 +705,7 @@ bool CLibretro::init_common(){
     lastTime = (double)milliseconds_now() / 1000;
     nbFrames = 0;
     isEmulating = true;
-    runloop_frame_time_last = 0;
+    
     return true;
 }
 
@@ -730,6 +730,8 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
 
 void CLibretro::run()
 {
+    static retro_usec_t  frame_limit_last_time = 0;
+    static retro_usec_t  runloop_frame_time_last = 0;
     if (!threaded)
     {
         if (runloop_frame_time.callback) {
@@ -760,6 +762,19 @@ void CLibretro::run()
             lastTime += 1.0;
         }
         nbFrames++;
+        retro_system_av_info av = { 0 };
+        g_retro.retro_get_system_av_info(&av);
+        retro_time_t frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / av.timing.fps * 1.0f);
+        retro_time_t to_sleep_ms = ((runloop_frame_time_last + frame_limit_minimum_time) - microseconds_now()) / 1000;
+        if (to_sleep_ms > 0)
+        {
+            float sleep_ms = (unsigned)to_sleep_ms;
+            /* Combat jitter a bit. */
+            frame_limit_last_time += frame_limit_minimum_time;
+            Sleep(sleep_ms);
+            return;
+        }
+        frame_limit_last_time = microseconds_now();
     }
 }
 

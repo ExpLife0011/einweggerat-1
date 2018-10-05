@@ -482,7 +482,7 @@ public:
          {
             wstring str = s2ws(retro->variables[i].name);
             wstring str2 = (LPCTSTR)name;
-            if (lstrcmp(str.c_str(), str2.c_str()) == 0)
+            if (str== str2)
             {
                const char* check = vValue.boolVal ? "enabled" : "disabled";
                retro->variables[i].var=check;
@@ -519,8 +519,8 @@ public:
          else
          {
 
-            vector <wstring> colour;
-            colour.clear();
+            vector <wstring> options;
+            options.clear();
             char *pch = (char*)retro->variables[i].usevars.c_str();
             while (pch != NULL)
             {
@@ -534,19 +534,19 @@ public:
                strncpy(val, pch, str2 - pch);
                std::wostringstream temp;
                temp << val;
-               colour.push_back(temp.str());
+               options.push_back(temp.str());
                pch += str2 - pch++;
 
             }
             std::wostringstream temp;
             temp << pch;
-            colour.push_back(temp.str());
+            options.push_back(temp.str());
 
-            LPWSTR **wszArray = new LPWSTR*[colour.size() + 1];
+            LPWSTR **wszArray = new LPWSTR*[options.size() + 1];
             int j = 0;
-            for (j; j < colour.size(); j++) {
-               wszArray[j] = new LPWSTR[colour[j].length()];
-               lstrcpy((LPWSTR)wszArray[j], colour[j].c_str());
+            for (j; j < options.size(); j++) {
+               wszArray[j] = new LPWSTR[options[j].length()];
+               lstrcpy((LPWSTR)wszArray[j], options[j].c_str());
 
             }
             wszArray[j] = NULL;
@@ -561,7 +561,7 @@ public:
             vValue.ChangeType(VT_BSTR);
             m_grid.SetItemValue(hDisabled, &vValue);
 
-            for (j = 0; j < colour.size(); j++) {
+            for (j = 0; j < options.size(); j++) {
                free(wszArray[j]);
             }
             free(wszArray);

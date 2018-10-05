@@ -151,16 +151,6 @@ void Audio::reset()
 
 void Audio::sleeplil()
 {
-    retro_time_t to_sleep_ms = ((frame_limit_last_time + frame_limit_minimum_time) - microseconds_now()) / 1000;
-    if (to_sleep_ms > 0)
-    {
-        float sleep_ms = (unsigned)to_sleep_ms;
-        /* Combat jitter a bit. */
-        frame_limit_last_time += frame_limit_minimum_time;
-        Sleep(sleep_ms);
-        return;
-    }
-    frame_limit_last_time = microseconds_now();
 }
 
 void Audio::mix(const int16_t* samples, size_t size)
