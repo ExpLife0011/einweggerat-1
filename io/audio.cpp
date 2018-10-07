@@ -65,30 +65,26 @@ static mal_uint32 audio_callback(mal_device* pDevice, mal_uint32 frameCount, voi
 static retro_time_t frame_limit_minimum_time = 0.0;
 static retro_time_t frame_limit_last_time = 0.0;
 
+static double PerfFrequencyInverse = 0.;
+static void InitPerfFrequencyInverse()
+{
+    LARGE_INTEGER freq = {};
+    if (!::QueryPerformanceFrequency(&freq) || freq.QuadPart == 0)
+        return;
+    PerfFrequencyInverse = 1000000. / (double)freq.QuadPart;
+}
+
 long long milliseconds_now() {
-    static LARGE_INTEGER s_frequency;
-    static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
-    if (s_use_qpc) {
-        LARGE_INTEGER now;
-        QueryPerformanceCounter(&now);
-        return (1000LL * now.QuadPart) / s_frequency.QuadPart;
-    }
-    else {
-        return GetTickCount();
-    }
+    return microseconds_now() / 1000;
 }
 
 long long microseconds_now() {
-    static LARGE_INTEGER s_frequency;
-    static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
-    if (s_use_qpc) {
-        LARGE_INTEGER now;
-        QueryPerformanceCounter(&now);
-        return (1000000LL * now.QuadPart) / s_frequency.QuadPart;
-    }
-    else {
-        return GetTickCount();
-    }
+    LARGE_INTEGER timeStamp = {};
+    if (!::QueryPerformanceCounter(&timeStamp))
+        return 0;
+    if (PerfFrequencyInverse == 0.)
+        InitPerfFrequencyInverse();
+    return (uint64_t)(PerfFrequencyInverse * timeStamp.QuadPart);
 }
 
 bool Audio::init(double refreshra, retro_system_av_info av)
