@@ -50,6 +50,9 @@ public:
   int nbFrames;
   bool threaded;
   BOOL isEmulating;
+  retro_usec_t  frame_limit_last_time;
+  retro_usec_t  runloop_frame_time_last;
+  retro_time_t frame_limit_minimum_time;
   
 
   DWORD ThreadStart();

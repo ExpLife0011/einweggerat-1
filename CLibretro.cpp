@@ -665,6 +665,7 @@ bool CLibretro::init_common(){
         return false;
     }
     g_retro.retro_get_system_av_info(&av);
+  
     ::video_configure(&av.geometry, emulator_hwnd);
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {
         refreshr = 60.0; // default value if cannot retrieve from user settings.
@@ -678,7 +679,9 @@ bool CLibretro::init_common(){
     lastTime = (double)milliseconds_now() / 1000;
     nbFrames = 0;
     isEmulating = true;
-    
+    frame_limit_last_time = 0;
+    runloop_frame_time_last = 0;
+    frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / av.timing.fps * 1.0f);
     return true;
 }
 
@@ -696,6 +699,7 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
     }
     else
     {
+        
         bool common = init_common();
         return common;
     }
@@ -703,8 +707,7 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
 
 void CLibretro::run()
 {
-    static retro_usec_t  frame_limit_last_time = 0;
-    static retro_usec_t  runloop_frame_time_last = 0;
+    
     if (!threaded)
     {
         if (runloop_frame_time.callback) {
@@ -735,9 +738,6 @@ void CLibretro::run()
             lastTime += 1.0;
         }
         nbFrames++;
-        retro_system_av_info av = { 0 };
-        g_retro.retro_get_system_av_info(&av);
-        retro_time_t frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / av.timing.fps * 1.0f);
         retro_time_t to_sleep_ms = ((runloop_frame_time_last + frame_limit_minimum_time) - microseconds_now()) / 1000;
         if (to_sleep_ms > 0)
         {
