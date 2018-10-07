@@ -719,6 +719,7 @@ void CLibretro::run()
             runloop_frame_time_last = current;
             runloop_frame_time.callback(delta * 1000);
         }
+        else runloop_frame_time_last = frame_limit_last_time;
 
         if (audio_callback.callback) {
             audio_callback.callback();
@@ -747,6 +748,7 @@ void CLibretro::run()
             Sleep(sleep_ms);
             return;
         }
+       
         frame_limit_last_time = microseconds_now();
     }
 }

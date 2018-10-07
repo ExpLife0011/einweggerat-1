@@ -222,7 +222,7 @@ void create_window(int width, int height, HWND hwnd) {
     typedef bool (APIENTRY *PFNWGLSWAPINTERVALFARPROC)(int);
     PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT = 0;
     wglSwapIntervalEXT = (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
-    if (wglSwapIntervalEXT) wglSwapIntervalEXT(0);
+    if (wglSwapIntervalEXT) wglSwapIntervalEXT(1);
     g_win = true;
     g_video.last_w = 0;
     g_video.last_h = 0;
