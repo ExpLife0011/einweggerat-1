@@ -448,6 +448,7 @@ static size_t core_audio_sample_batch(const int16_t *data, size_t frames) {
     CLibretro* lib = CLibretro::GetSingleton();
     if (lib->isEmulating)
     {
+        
         lib->core_audio_sample_batch(data, frames);
         return frames;
     }
@@ -699,9 +700,15 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
     }
     else
     {
-        
-        bool common = init_common();
-        return common;
+        try
+        {
+            bool common = init_common();
+            return common;
+        }
+        catch (...)
+        {
+            return false;
+        } 
     }
 }
 
@@ -719,7 +726,7 @@ void CLibretro::run()
             runloop_frame_time_last = current;
             runloop_frame_time.callback(delta * 1000);
         }
-        else runloop_frame_time_last = frame_limit_last_time;
+        else runloop_frame_time_last = microseconds_now();
 
         if (audio_callback.callback) {
             audio_callback.callback();
@@ -728,7 +735,10 @@ void CLibretro::run()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        g_retro.retro_run();
+
+       
+            g_retro.retro_run();
+      
         double currentTime = (double)milliseconds_now() / 1000;
         if (currentTime - lastTime >= 0.5) { // If last prinf() was more than 1 sec ago
                            // printf and reset timer
@@ -770,11 +780,20 @@ void CLibretro::kill()
     }
     else
     {
-        g_retro.retro_unload_game();
-        g_retro.retro_deinit();
-        if (info.data)
-            free((void*)info.data);
-        _audio.destroy();
-        video_deinit();
+        try
+        {
+            g_retro.retro_unload_game();
+            g_retro.retro_deinit();
+            if (info.data)
+                free((void*)info.data);
+            _audio.destroy();
+            video_deinit();
+        }
+        catch (...)
+        {
+        	
+        }
+        
+       
     }
 }
