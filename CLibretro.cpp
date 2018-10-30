@@ -67,7 +67,7 @@ uintptr_t core_get_current_framebuffer() {
     return g_video.fbo_id;
 }
 
-void init_coresettings(retro_variable *var){
+void init_coresettings(retro_variable *var) {
     CLibretro * retro = CLibretro::GetSingleton();
     FILE *fp = NULL;
     std::vector<CLibretro::core_vars> variables1;
@@ -79,13 +79,13 @@ void init_coresettings(retro_variable *var){
         char descript_var[50] = { 0 };
         char *e = strchr((char*)var->value, ';');
         strncpy(descript_var, var->value, (int)(e - (char*)var->value));
-        vars_struct.description=descript_var;
+        vars_struct.description = descript_var;
         char * pch = strstr((char*)var->value, (char*)"; ");
         pch += strlen("; ");
-        vars_struct.usevars= pch;
+        vars_struct.usevars = pch;
         char* str2 = strstr(pch, (char*)"|");
-        int len = !str2 ? strlen(pch) :str2 - pch;
-        strncpy(descript_var, pch, len); 
+        int len = !str2 ? strlen(pch) : str2 - pch;
+        strncpy(descript_var, pch, len);
         vars_struct.var.append(descript_var, len);
         variables1.push_back(vars_struct);
         var++;
@@ -99,8 +99,8 @@ void init_coresettings(retro_variable *var){
         ini_t * ini = ini_create(NULL);
         for (int i = 0; i < variables1.size(); i++)
         {
-            ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name.c_str(), 
-            strlen(variables1[i].name.c_str()), (char*)variables1[i].var.c_str(), strlen(variables1[i].var.c_str()));
+            ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name.c_str(),
+                strlen(variables1[i].name.c_str()), (char*)variables1[i].var.c_str(), strlen(variables1[i].var.c_str()));
             retro->variables.push_back(variables1[i]);
         }
         int size = ini_save(ini, NULL, 0); // Find the size needed
@@ -131,18 +131,18 @@ void init_coresettings(retro_variable *var){
         bool save = false;
         for (int i = 0; i < vars_num1; i++)
         {
-            int second_index = ini_find_property(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name.c_str(), 
+            int second_index = ini_find_property(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name.c_str(),
                 strlen(variables1[i].name.c_str()));
             if (second_index != INI_NOT_FOUND)
             {
                 const char* variable_val = ini_property_value(ini, INI_GLOBAL_SECTION, second_index);
-                variables1[i].var= variable_val;
+                variables1[i].var = variable_val;
                 retro->variables.push_back(variables1[i]);
             }
             else
             {
-                ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name.c_str(), strlen(variables1[i].name.c_str()), 
-                (char*)variables1[i].var.c_str(), strlen(variables1[i].var.c_str()));
+                ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables1[i].name.c_str(), strlen(variables1[i].name.c_str()),
+                    (char*)variables1[i].var.c_str(), strlen(variables1[i].var.c_str()));
                 retro->variables.push_back(variables1[i]);
                 save = true;
             }
@@ -161,7 +161,7 @@ void init_coresettings(retro_variable *var){
     }
 }
 
-const char* load_coresettings(retro_variable *var){
+const char* load_coresettings(retro_variable *var) {
     CLibretro *retro = CLibretro::GetSingleton();
     for (int i = 0; i < retro->variables.size(); i++)
     {
@@ -335,62 +335,62 @@ static void core_input_poll(void) {
 static int16_t core_input_state(unsigned port, unsigned device, unsigned index, unsigned id) {
     if (port != 0)return 0;
     input *input_device = input::GetSingleton();
-  
-        if (device == RETRO_DEVICE_ANALOG || device == RETRO_DEVICE_JOYPAD){
-        if (input_device != NULL && input_device->bl != NULL){
-        for (unsigned int i = 0; i < input_device->bl->get_count(); i++) {
-                    int retro_id = 0;
-                    int16_t value = 0;
-                    bool isanalog = false;
-                    input_device->getbutton(i, value, retro_id, isanalog);
-                    if (device == RETRO_DEVICE_ANALOG)
+
+    if (device == RETRO_DEVICE_ANALOG || device == RETRO_DEVICE_JOYPAD) {
+        if (input_device != NULL && input_device->bl != NULL) {
+            for (unsigned int i = 0; i < input_device->bl->get_count(); i++) {
+                int retro_id = 0;
+                int16_t value = 0;
+                bool isanalog = false;
+                input_device->getbutton(i, value, retro_id, isanalog);
+                if (device == RETRO_DEVICE_ANALOG)
+                {
+                    if (value <= -0x8000)value = -0x7fff;
+                    if (index == RETRO_DEVICE_INDEX_ANALOG_LEFT)
                     {
-                        if (value <= -0x8000)value = -0x7fff;
-                        if (index == RETRO_DEVICE_INDEX_ANALOG_LEFT)
+                        if ((id == RETRO_DEVICE_ID_ANALOG_X && retro_id == 16) || (id == RETRO_DEVICE_ID_ANALOG_Y && retro_id == 17))
                         {
-                            if ((id == RETRO_DEVICE_ID_ANALOG_X && retro_id == 16) || (id == RETRO_DEVICE_ID_ANALOG_Y && retro_id == 17))
-                            {
-                                return isanalog ? -value : value;
-                            }
-                        }
-                        else
-                        {
-                            if ((id == RETRO_DEVICE_ID_ANALOG_X && retro_id == 18) || (id == RETRO_DEVICE_ID_ANALOG_Y && retro_id == 19))
-                            {
-                                return isanalog ? -value : value;
-                            }
+                            return isanalog ? -value : value;
                         }
                     }
                     else
                     {
-                        value = abs(value);
-                        if (retro_id == id)return value;
+                        if ((id == RETRO_DEVICE_ID_ANALOG_X && retro_id == 18) || (id == RETRO_DEVICE_ID_ANALOG_Y && retro_id == 19))
+                        {
+                            return isanalog ? -value : value;
+                        }
                     }
+                }
+                else
+                {
+                    value = abs(value);
+                    if (retro_id == id)return value;
                 }
             }
         }
+    }
 
 
     return 0;
 }
 
-void CLibretro::core_audio_sample(int16_t left, int16_t right){
+void CLibretro::core_audio_sample(int16_t left, int16_t right) {
     int16_t buf[2] = { left, right };
     _audio.mix(buf, 1);
 }
 
-size_t CLibretro::core_audio_sample_batch(const int16_t *data, size_t frames){
+size_t CLibretro::core_audio_sample_batch(const int16_t *data, size_t frames) {
     _audio.mix(data, frames);
     return frames;
 }
 
-bool CLibretro::savestate(TCHAR* filename, bool save){
+bool CLibretro::savestate(TCHAR* filename, bool save) {
     if (isEmulating)
     {
         size_t size = g_retro.retro_serialize_size();
         if (size)
         {
-            FILE *Input = _wfopen(filename, save?L"wb":L"rb");
+            FILE *Input = _wfopen(filename, save ? L"wb" : L"rb");
             BYTE *Memory = (BYTE *)malloc(size);
             if (!Input)return false;
             if (save)
@@ -416,13 +416,13 @@ bool CLibretro::savestate(TCHAR* filename, bool save){
     return false;
 }
 
-bool CLibretro::savesram(TCHAR* filename, bool save){
+bool CLibretro::savesram(TCHAR* filename, bool save) {
     if (isEmulating)
     {
         size_t size = g_retro.retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
         if (size)
         {
-            FILE *Input = _wfopen(filename,save? L"wb" : L"rb");
+            FILE *Input = _wfopen(filename, save ? L"wb" : L"rb");
             if (!Input) return(NULL);
             BYTE *Memory = (BYTE *)g_retro.retro_get_memory_data(RETRO_MEMORY_SAVE_RAM);
             save ? fwrite(Memory, 1, size, Input) : fread(Memory, 1, size, Input);
@@ -434,7 +434,7 @@ bool CLibretro::savesram(TCHAR* filename, bool save){
     return false;
 }
 
-void CLibretro::reset(){
+void CLibretro::reset() {
     if (isEmulating)g_retro.retro_reset();
 }
 
@@ -448,7 +448,7 @@ static size_t core_audio_sample_batch(const int16_t *data, size_t frames) {
     CLibretro* lib = CLibretro::GetSingleton();
     if (lib->isEmulating)
     {
-        
+
         lib->core_audio_sample_batch(data, frames);
         return frames;
     }
@@ -542,7 +542,7 @@ static void noop() {
 }
 
 CLibretro* CLibretro::m_Instance = 0;
-CLibretro* CLibretro::CreateInstance(HWND hwnd){
+CLibretro* CLibretro::CreateInstance(HWND hwnd) {
     if (0 == m_Instance)
     {
         m_Instance = new CLibretro();
@@ -551,26 +551,26 @@ CLibretro* CLibretro::CreateInstance(HWND hwnd){
     return m_Instance;
 }
 
-CLibretro* CLibretro::GetSingleton(){
+CLibretro* CLibretro::GetSingleton() {
     return m_Instance;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 
-bool CLibretro::running(){
+bool CLibretro::running() {
     return isEmulating;
 }
 
-CLibretro::CLibretro(){
+CLibretro::CLibretro() {
     threaded = false;
     isEmulating = false;
 }
 
-static DWORD WINAPI libretro_thread(void* Param){
+static DWORD WINAPI libretro_thread(void* Param) {
     CLibretro* This = (CLibretro*)Param;
     return This->ThreadStart();
 }
 
-DWORD CLibretro::ThreadStart(void){
+DWORD CLibretro::ThreadStart(void) {
     init_common();
     // Do stuff
     while (isEmulating)
@@ -599,7 +599,7 @@ DWORD CLibretro::ThreadStart(void){
     return 0;
 }
 
-CLibretro::~CLibretro(void){
+CLibretro::~CLibretro(void) {
     if (isEmulating)isEmulating = false;
     kill();
 }
@@ -617,7 +617,7 @@ long GetFileSize(const TCHAR *fileName)
     return (long)fileInfo.nFileSizeLow;
 }
 
-bool CLibretro::init_common(){
+bool CLibretro::init_common() {
     double refreshr = 0;
     DEVMODE lpDevMode;
     struct retro_system_info system = { 0 };
@@ -632,7 +632,7 @@ bool CLibretro::init_common(){
     g_video.hw.context_type = RETRO_HW_CONTEXT_NONE;
     g_video.hw.context_reset = NULL;
     g_video.hw.context_destroy = NULL;
-    
+
     if (!core_load(core_path, gamespec, rom_path))
     {
         printf("FAILED TO LOAD CORE!!!!!!!!!!!!!!!!!!");
@@ -667,7 +667,7 @@ bool CLibretro::init_common(){
         return false;
     }
     g_retro.retro_get_system_av_info(&av);
-  
+
     ::video_configure(&av.geometry, emulator_hwnd);
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {
         refreshr = 60.0; // default value if cannot retrieve from user settings.
@@ -713,13 +713,13 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
         catch (...)
         {
             return false;
-        } 
+        }
     }
 }
 
 void CLibretro::run()
 {
-    
+
     if (!threaded)
     {
         if (runloop_frame_time.callback) {
@@ -741,9 +741,9 @@ void CLibretro::run()
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-       
-            g_retro.retro_run();
-      
+
+        g_retro.retro_run();
+
         double currentTime = (double)milliseconds_now() / 1000;
         if (currentTime - lastTime >= 0.5) { // If last prinf() was more than 1 sec ago
                            // printf and reset timer
@@ -766,7 +766,7 @@ bool CLibretro::init(HWND hwnd)
 
 void CLibretro::kill()
 {
-    
+
     if (threaded)
     {
         WaitForSingleObject(thread_handle, INFINITE);
@@ -774,17 +774,17 @@ void CLibretro::kill()
     }
     else
     {
-            if (isEmulating)
-            {
-                isEmulating = false;
-                g_retro.retro_unload_game();
-                g_retro.retro_deinit();
-                if (info.data)
-                    free((void*)info.data);
-                _audio.destroy();
-                video_deinit();
-              
-            }
-         
+        if (isEmulating)
+        {
+            isEmulating = false;
+            g_retro.retro_unload_game();
+            g_retro.retro_deinit();
+            if (info.data)
+                free((void*)info.data);
+            _audio.destroy();
+            video_deinit();
+
+        }
+
     }
 }

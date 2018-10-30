@@ -103,7 +103,7 @@ bool Audio::init(double refreshra, retro_system_av_info av)
         mal_backend_null    // Lowest priority.
     };
 
-    if(mal_context_init(backends, sizeof(backends) / sizeof(backends[0]), &contextConfig, &context) != MAL_SUCCESS)
+    if (mal_context_init(backends, sizeof(backends) / sizeof(backends[0]), &contextConfig, &context) != MAL_SUCCESS)
     {
         printf("Failed to initialize context.");
         return false;
@@ -141,11 +141,6 @@ void Audio::destroy()
     }
 }
 void Audio::reset()
-{
-}
-
-
-void Audio::sleeplil()
 {
 }
 

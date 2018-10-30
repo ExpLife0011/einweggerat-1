@@ -79,7 +79,6 @@ extern "C" {
       bool init(double refreshra, retro_system_av_info av);
       void destroy();
       void reset();
-      void sleeplil();
       void mix(const int16_t* samples, size_t sample_count);
       mal_uint32 fill_buffer(uint8_t* pSamples, mal_uint32 samplecount);
       

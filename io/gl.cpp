@@ -222,7 +222,7 @@ void create_window(int width, int height, HWND hwnd) {
     typedef bool (APIENTRY *PFNWGLSWAPINTERVALFARPROC)(int);
     PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT = 0;
     wglSwapIntervalEXT = (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
-    if (wglSwapIntervalEXT) wglSwapIntervalEXT(0);
+    if (wglSwapIntervalEXT) wglSwapIntervalEXT(1);
     g_win = true;
     g_video.last_w = 0;
     g_video.last_h = 0;
@@ -364,7 +364,7 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
 
         refresh_vertex_data();
     }
-   
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
@@ -378,9 +378,9 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
             g_video.pixtype, g_video.pixfmt, data);
     }
 
-   
 
-   
+
+
     resize_cb();
 
     glClear(GL_COLOR_BUFFER_BIT);
