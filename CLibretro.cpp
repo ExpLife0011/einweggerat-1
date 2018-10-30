@@ -766,7 +766,7 @@ bool CLibretro::init(HWND hwnd)
 
 void CLibretro::kill()
 {
-    isEmulating = false;
+    
     if (threaded)
     {
         WaitForSingleObject(thread_handle, INFINITE);
@@ -776,12 +776,18 @@ void CLibretro::kill()
     {
         try
         {
-            g_retro.retro_unload_game();
-            g_retro.retro_deinit();
-            if (info.data)
-                free((void*)info.data);
-            _audio.destroy();
-            video_deinit();
+            if (isEmulating)
+            {
+                isEmulating = false;
+                g_retro.retro_unload_game();
+                g_retro.retro_deinit();
+                if (info.data)
+                    free((void*)info.data);
+                _audio.destroy();
+                video_deinit();
+              
+            }
+          
         }
         catch (...)
         {

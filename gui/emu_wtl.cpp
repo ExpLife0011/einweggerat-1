@@ -142,12 +142,13 @@ int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	{
 		if (!AttachConsole(ATTACH_PARENT_PROCESS))
 		{
-			CAboutDlg dlg;
-			dlg.DoModal();
-			_Module.RemoveMessageLoop();
-			LocalFree(cmdargptr);
-			ExitProcess(0);
-			return 0;
+
+            dlgMain.ShowWindow(nCmdShow);
+            int nRet = theLoop.Run(dlgMain);
+            _Module.RemoveMessageLoop();
+            LocalFree(cmdargptr);
+            ExitProcess(0);
+            return nRet;
 		}
 		else
 		{

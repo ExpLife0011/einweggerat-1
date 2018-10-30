@@ -338,8 +338,15 @@ public:
 
 		LRESULT OnOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 		{
-			COptions dlg;
-			dlg.DoModal();
+		
+            if(emulator->isEmulating)
+            { 
+                COptions dlg;
+                dlg.DoModal();
+            }
+            else
+                MessageBox(L"No game/libretro core running.",L"Error",MB_ICONSTOP);
+			
 			return 0;
 		}
 
