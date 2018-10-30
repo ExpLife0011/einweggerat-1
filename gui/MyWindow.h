@@ -316,7 +316,7 @@ public:
 
             if (found_core == 1)
             {
-                start((TCHAR*)lpszPath, (TCHAR*)cores[selected_core].core_path.c_str(), true, false);
+                start((TCHAR*)lpszPath, (TCHAR*)cores[selected_core].core_path.c_str(), false, false);
                 return;
             }
             CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, ext_filter.c_str());
