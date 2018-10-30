@@ -774,8 +774,6 @@ void CLibretro::kill()
     }
     else
     {
-        try
-        {
             if (isEmulating)
             {
                 isEmulating = false;
@@ -787,13 +785,6 @@ void CLibretro::kill()
                 video_deinit();
               
             }
-          
-        }
-        catch (...)
-        {
-        	
-        }
-        
-       
+         
     }
 }
