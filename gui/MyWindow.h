@@ -322,7 +322,7 @@ public:
             CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, ext_filter.c_str());
             dlg.m_ofn.lpstrTitle = L"Load ROM/image file with chosen core";
             if (dlg.DoModal() == IDOK)
-                start(dlg.m_szFileName, (TCHAR*)core_paths[dlg.m_ofn.nFilterIndex].c_str(), true, false);
+                start(dlg.m_szFileName, (TCHAR*)core_paths[dlg.m_ofn.nFilterIndex-1].c_str(), false, false);
 		}
 
 		LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -370,7 +370,7 @@ public:
             dlg.m_ofn.lpstrTitle = L"Load ROM/image file";
 			if (dlg.DoModal() == IDOK)
 			{
-                start((TCHAR*)dlg.m_szFileName, (TCHAR*)cores[dlg.m_ofn.nFilterIndex].core_path.c_str(), true, false);  
+                start((TCHAR*)dlg.m_szFileName, (TCHAR*)cores[dlg.m_ofn.nFilterIndex-1].core_path.c_str(), false, false);  
 			}
 			return 0;
 		}

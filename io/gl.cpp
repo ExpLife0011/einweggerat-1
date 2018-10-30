@@ -286,8 +286,7 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
     nwidth *= 1;
     nheight *= 1;
 
-    if (!g_win)
-        create_window(nwidth, nheight, hwnd);
+    create_window(nwidth, nheight, hwnd);
 
     if (g_video.tex_id)
         glDeleteTextures(1, &g_video.tex_id);

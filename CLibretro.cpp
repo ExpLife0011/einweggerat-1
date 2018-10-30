@@ -458,6 +458,7 @@ static size_t core_audio_sample_batch(const int16_t *data, size_t frames) {
 bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_filename) {
     TCHAR filez[MAX_PATH] = { 0 };
     TCHAR core_handlepath[MAX_PATH] = { 0 };
+    if (g_retro.handle)FreeLibrary(g_retro.handle);
 
     memset(&g_retro, 0, sizeof(g_retro));
     g_retro.handle = LoadLibrary(sofile);
@@ -688,7 +689,11 @@ bool CLibretro::init_common(){
 
 bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecificoptions, bool mthreaded)
 {
-    if (isEmulating)isEmulating = false;
+    if (isEmulating)
+    {
+        kill();
+        isEmulating = false;
+    }
     gamespec = gamespecificoptions;
     lstrcpy(rom_path, filename);
     lstrcpy(core_path, core_filename);
