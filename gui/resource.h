@@ -95,14 +95,17 @@
 #define ID_SAVESTATEFILE                40039
 #define ID_LOADSTATEFILE                40045
 #define ID_RESET                        40048
+#define ID_FILE_OPENROM                 40056
+#define ID_FILE_SAVE40057               40057
+#define ID_FILE_LOADSAVESTATE           40058
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        141
-#define _APS_NEXT_COMMAND_VALUE         40056
-#define _APS_NEXT_CONTROL_VALUE         1196
+#define _APS_NEXT_RESOURCE_VALUE        143
+#define _APS_NEXT_COMMAND_VALUE         40059
+#define _APS_NEXT_CONTROL_VALUE         1197
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

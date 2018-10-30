@@ -46,13 +46,7 @@
 #define TAPS_MULT 1
 #endif
 
-#if defined(SINC_WINDOW_LANCZOS)
-#define window_function(idx)  (lanzcos_window_function(idx))
-#elif defined(SINC_WINDOW_KAISER)
 #define window_function(idx)  (kaiser_window_function(idx, SINC_WINDOW_KAISER_BETA))
-#else
-#error "No SINC window function defined."
-#endif
 
 /* For the little amount of taps we're using,
 * SSE1 is faster than AVX for some reason.
@@ -119,11 +113,6 @@ static __forceinline double sinc(double val)
    return sin(val) / val;
 }
 
-static __forceinline double lanzcos_window_function(double index)
-{
-   return sinc(M_PI * index);
-}
-
 void *memalign_alloc(size_t boundary, size_t size)
 {
    void **place = NULL;
@@ -184,11 +173,9 @@ void resampler_sinc_process(void *re_, struct resampler_data *data)
 			unsigned taps = resamp->taps;
 			unsigned phase = resamp->time >> SUBPHASE_BITS;
 			const float *phase_table = resamp->phase_table + phase * taps * TAPS_MULT;
-#if SINC_COEFF_LERP
 			const float *delta_table = phase_table + taps;
 			__m128 delta = _mm_set1_ps((float)
 				(resamp->time & SUBPHASE_MASK) * SUBPHASE_MOD);
-#endif
 
 			__m128 sum_l = _mm_setzero_ps();
 			__m128 sum_r = _mm_setzero_ps();
@@ -197,14 +184,9 @@ void resampler_sinc_process(void *re_, struct resampler_data *data)
 			{
 				__m128 buf_l = _mm_loadu_ps(buffer_l + i);
 				__m128 buf_r = _mm_loadu_ps(buffer_r + i);
-
-#if SINC_COEFF_LERP
 				__m128 deltas = _mm_load_ps(delta_table + i);
 				__m128 _sinc = _mm_add_ps(_mm_load_ps(phase_table + i),
 					_mm_mul_ps(deltas, delta));
-#else
-				__m128 _sinc = _mm_load_ps(phase_table + i);
-#endif
 				sum_l = _mm_add_ps(sum_l, _mm_mul_ps(buf_l, _sinc));
 				sum_r = _mm_add_ps(sum_r, _mm_mul_ps(buf_r, _sinc));
 			}
@@ -331,12 +313,7 @@ void *resampler_sinc_init(
 		re->taps = (unsigned)ceil(re->taps / bandwidth_mod);
 	}
 
-	/* Be SIMD-friendly. */
-#if (defined(__AVX__) && ENABLE_AVX) || (defined(__ARM_NEON__))
-	re->taps = (re->taps + 7) & ~7;
-#else
 	re->taps = (re->taps + 3) & ~3;
-#endif
 
 	phase_elems = ((1 << PHASE_BITS) * re->taps) * TAPS_MULT;
 	elems = phase_elems + 4 * re->taps;

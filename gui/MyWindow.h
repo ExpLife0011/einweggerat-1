@@ -104,14 +104,26 @@ public:
 		COMMAND_ID_HANDLER(ID_ABOUT, OnAbout)
 		COMMAND_ID_HANDLER(ID_LOADSTATEFILE,OnLoadState)
 		COMMAND_ID_HANDLER(ID_SAVESTATEFILE, OnSaveState)
+        COMMAND_ID_HANDLER(ID_FILE_OPENROM,OnFileOpen)
 		COMMAND_ID_HANDLER(ID_RESET, OnReset)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMyWindow>)
 		CHAIN_MSG_MAP(CDropFileTarget<CMyWindow>)
 		END_MSG_MAP()
 
+        struct libretro_core {
+        std::tstring core_system; //filename
+        std::tstring core_exts; //filename
+        std::tstring core_path;
+        };
+
 		CLibretro *emulator;
+        TCHAR rom_path[MAX_PATH + 1];
+        TCHAR core_path[MAX_PATH + 1];
 		input*    input_device;
 		HACCEL    m_haccelerator;
+        std::vector<libretro_core> cores;
+
+        
 
 		LRESULT OnLoadState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 		{
@@ -180,6 +192,42 @@ public:
 			return 0;
 		}
 
+        void LoadPlugins(void)
+        {
+            int plugin_count = 0;
+            TCHAR core_filename[MAX_PATH] = { 0 };
+            GetCurrentDirectory(MAX_PATH, core_filename);
+            PathAppend(core_filename, L"cores");
+            TCHAR spec[_MAX_PATH];
+            wsprintf(spec, L"%s\\*.dll", core_filename);
+            WIN32_FIND_DATA data;
+            HANDLE h = FindFirstFile(spec, &data);
+            if (h != INVALID_HANDLE_VALUE) {
+                do {
+                    TCHAR fname[_MAX_PATH];
+                    wsprintf(fname, L"%s\\%s", core_filename, data.cFileName);
+                    HMODULE hModule = LoadLibrary(fname);
+                    if (hModule) {
+                    typedef void(*retro_get_system_info)(struct retro_system_info *info);
+                    retro_get_system_info getinfo;
+                    struct retro_system_info system = { 0 };
+                    getinfo = (retro_get_system_info)GetProcAddress(hModule, "retro_get_system_info");
+                    if (getinfo)
+                    {
+                        getinfo(&system);
+                        libretro_core entry;
+                        entry.core_system = utf16_from_utf8(system.library_name);
+                        entry.core_exts = utf16_from_utf8(system.valid_extensions);
+                        entry.core_path = fname;
+                        cores.push_back(entry);
+                    }
+                    
+                    FreeLibrary(hModule);
+                    }
+                } while (FindNextFile(h, &data));
+                FindClose(h);
+            }
+        }
 
 		LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
@@ -192,6 +240,7 @@ public:
 			pLoop->AddMessageFilter(this);
 			RegisterDropTarget();
 			SetRedraw(FALSE);
+            LoadPlugins();
 			return 0;
 		}
 
@@ -231,14 +280,49 @@ public:
          }
 		}
 
+       
 
 		void ProcessFile(LPCTSTR lpszPath)
 		{
-			/**
-			CHAR szFileName[MAX_PATH];
-			string ansi = ansi_from_utf16(lpszPath);
-			strcpy(szFileName,ansi.c_str());
-			emulator->loadfile(szFileName);*/
+            tstring ext_filter;
+            tstring extensions;
+            TCHAR* ext = PathFindExtensionW(lpszPath);
+
+            int selected_core = 0;
+            int found_core = 0;
+            std::vector<tstring> core_paths;
+            for (int i = 0; i < cores.size(); i++)
+            {
+                tstring extensions = cores[i].core_exts;
+                size_t found = extensions.find(ext+1);
+                if (found != std::string::npos)
+                {
+                    found_core++;
+                    selected_core = i;
+                    
+                    ext_filter += cores[i].core_system;
+                    core_paths.push_back(cores[i].core_path);
+                    extensions = cores[i].core_exts;
+                    ext_filter.push_back('\0');
+                    ext_filter += L";*.";
+                    while (extensions.find(L"|") != std::string::npos)
+                             extensions.replace(extensions.find(L"|"), 1, L";*.");
+                    ext_filter += extensions;
+                    ext_filter.push_back('\0');
+                }  
+            }
+            ext_filter.push_back('\0');
+            ext_filter.push_back('\0');
+
+            if (found_core == 1)
+            {
+                start((TCHAR*)lpszPath, (TCHAR*)cores[selected_core].core_path.c_str(), true, false);
+                return;
+            }
+            CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, ext_filter.c_str());
+            dlg.m_ofn.lpstrTitle = L"Load ROM/image file with chosen core";
+            if (dlg.DoModal() == IDOK)
+                start(dlg.m_szFileName, (TCHAR*)core_paths[dlg.m_ofn.nFilterIndex].c_str(), true, false);
 		}
 
 		LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -267,17 +351,26 @@ public:
 
 		LRESULT OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/ )
 		{
-			CHAR szFileName[MAX_PATH];
-			LPCTSTR sFiles =
-				L"GB ROMs (*.dmg,*.gb)\0*.dmg;*.gb\0"
-				L"All Files (*.*)\0*.*\0\0";
-			CFileDialog dlg( TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, sFiles);
+            tstring ext_filter;
+            tstring extensions;
+            for (int i = 0; i < cores.size(); i++)
+            {
+                ext_filter += cores[i].core_system;
+                extensions = cores[i].core_exts;
+                ext_filter.push_back('\0');
+                ext_filter += L"*.";
+                while (extensions.find(L"|") != std::string::npos)
+                    extensions.replace(extensions.find(L"|"), 1, L";*.");
+                ext_filter += extensions;
+                ext_filter.push_back('\0');
+            }
+            ext_filter.push_back('\0');
+            ext_filter.push_back('\0');
+			CFileDialog dlg( TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, ext_filter.c_str());
+            dlg.m_ofn.lpstrTitle = L"Load ROM/image file";
 			if (dlg.DoModal() == IDOK)
 			{
-			//	string ansi = ansi_from_utf16(dlg.m_szFileName);
-			//	strcpy(szFileName,ansi.c_str());
-			///	emulator->loadfile(szFileName);
-				// do stuff
+                start((TCHAR*)dlg.m_szFileName, (TCHAR*)cores[dlg.m_ofn.nFilterIndex].core_path.c_str(), true, false);  
 			}
 			return 0;
 		}
