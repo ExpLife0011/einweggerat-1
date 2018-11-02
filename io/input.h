@@ -27,10 +27,14 @@ public:
   ~input();
   unsigned                bits;
   LPDIRECTINPUT8          lpDI;
+
   guid_container        * guids;
   dinput                * di;
   bind_list             * bl;
+  HWND hwnd;
   static	input* m_Instance;
+
+
 
 
   static input* CreateInstance(HINSTANCE hInstance, HWND hWnd);
@@ -43,6 +47,7 @@ public:
   // input_i_dinput
   void poll();
   bool getbutton(int which, int16_t & value, int & retro_id, bool & isanalog);
+  void readmouse(int16_t & x, int16_t & y, bool &lbutton, bool &rbutton);
   unsigned read();
   void strobe();
   int get_speed();

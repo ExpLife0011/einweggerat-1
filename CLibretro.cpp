@@ -244,13 +244,13 @@ bool core_environment(unsigned cmd, void *data) {
                 CString str = var->description;
                 int id = var->id;
                 int index = var->index;
-                if (var->device == RETRO_DEVICE_ANALOG || (var->device == RETRO_DEVICE_JOYPAD))
+                if (var->device == RETRO_DEVICE_ANALOG || (var->device == RETRO_DEVICE_JOYPAD)))
                 {
-                    if (var->device == RETRO_DEVICE_ANALOG)
-                        id = (index == RETRO_DEVICE_INDEX_ANALOG_LEFT) ? (var->id == RETRO_DEVICE_ID_ANALOG_X ? 16 : 17) :
-                        (var->id == RETRO_DEVICE_ID_ANALOG_X ? 18 : 19);
+                if (var->device == RETRO_DEVICE_ANALOG)
+                    id = (index == RETRO_DEVICE_INDEX_ANALOG_LEFT) ? (var->id == RETRO_DEVICE_ID_ANALOG_X ? 16 : 17) :
+                    (var->id == RETRO_DEVICE_ID_ANALOG_X ? 18 : 19);
 
-                    input_device->bl->add(keyboard, i, str.GetBuffer(NULL), id);
+                input_device->bl->add(keyboard, i, str.GetBuffer(NULL), id);
                 }
                 i++; ++var;
             }
@@ -335,6 +335,25 @@ static void core_input_poll(void) {
 static int16_t core_input_state(unsigned port, unsigned device, unsigned index, unsigned id) {
     if (port != 0)return 0;
     input *input_device = input::GetSingleton();
+
+    if (device == RETRO_DEVICE_MOUSE)
+    {
+        int16_t x = 0, y = 0;
+        bool left = false, right = false;
+        input_device->readmouse(x, y, left, right);
+        switch (id)
+        {
+        case RETRO_DEVICE_ID_MOUSE_X:
+            return x;
+        case RETRO_DEVICE_ID_MOUSE_Y:
+            return y;
+        case RETRO_DEVICE_ID_MOUSE_LEFT:
+            return left;
+        case RETRO_DEVICE_ID_MOUSE_RIGHT:
+            return right;
+        }
+        return 0;
+    }
 
     if (device == RETRO_DEVICE_ANALOG || device == RETRO_DEVICE_JOYPAD) {
         if (input_device != NULL && input_device->bl != NULL) {
@@ -667,6 +686,7 @@ bool CLibretro::init_common() {
         return false;
     }
     g_retro.retro_get_system_av_info(&av);
+    g_retro.retro_set_controller_port_device(0, RETRO_DEVICE_MOUSE);
 
     ::video_configure(&av.geometry, emulator_hwnd);
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {

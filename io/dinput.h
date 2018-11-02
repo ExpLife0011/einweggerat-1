@@ -10,112 +10,125 @@ class guid_container;
 class dinput
 {
 public:
-	struct di_event
-	{
-		typedef enum
-		{
-			ev_key,
-			ev_joy,
-			ev_xinput,
-			ev_none
-		} event_type;
+    struct mouse_t
+    {
+        int x;
+        int y;
+        bool lbutton;
+        bool rbutton;
+    }mousie;
 
-		typedef enum
-		{
-			key_up,
-			key_down,
-			key_none
-		} key_type;
+    struct di_event
+    {
 
-		typedef enum
-		{
-			joy_axis,
-			joy_button,
-			joy_pov
-		} joy_type;
 
-		typedef enum
-		{
-			xinput_axis,
-			xinput_trigger,
-			xinput_button
-		} xinput_type;
+        typedef enum
+        {
+            ev_key,
+            ev_joy,
+            ev_xinput,
+            ev_none
+        } event_type;
 
-		typedef enum
-		{
-			axis_center,
-			axis_negative,
-			axis_positive
-		} axis_motion;
+        typedef enum
+        {
+            key_up,
+            key_down,
+            key_none
+        } key_type;
 
-		typedef enum
-		{
-			button_up,
-			button_down
-		} button_motion;
+        typedef enum
+        {
+            joy_axis,
+            joy_button,
+            joy_pov
+        } joy_type;
 
-		event_type type;
+        typedef enum
+        {
+            xinput_axis,
+            xinput_trigger,
+            xinput_button
+        } xinput_type;
 
-		union
-		{
-			struct
-			{
-				key_type type;
+        typedef enum
+        {
+            axis_center,
+            axis_negative,
+            axis_positive
+        } axis_motion;
 
-				unsigned which;
-			} key;
+        typedef enum
+        {
+            button_up,
+            button_down
+        } button_motion;
 
-			struct
-			{
-				unsigned serial;
+        event_type type;
 
-				joy_type type;
+        union
+        {
+            struct
+            {
+                key_type type;
 
-				unsigned which;
+                unsigned which;
+            } key;
 
-				union
-				{
-					axis_motion axis;
+            struct
+            {
+                unsigned serial;
 
-					button_motion button;
+                joy_type type;
 
-					unsigned pov_angle;
-				};
+                unsigned which;
 
-				unsigned value;
-			} joy;
+                union
+                {
+                    axis_motion axis;
 
-			struct
-			{
-				unsigned index;
+                    button_motion button;
 
-				xinput_type type;
+                    unsigned pov_angle;
+                };
 
-				unsigned which;
+                unsigned value;
+            } joy;
 
-				union
-				{
-					axis_motion axis;
+            struct
+            {
+                unsigned index;
 
-					button_motion button;
-				};
+                xinput_type type;
 
-				unsigned value;
-			} xinput;
-		};
-	};
+                unsigned which;
 
-	virtual ~dinput() {}
+                union
+                {
+                    axis_motion axis;
 
-	virtual const char* open( void * di8, void * hwnd, guid_container * ) = 0;
+                    button_motion button;
+                };
 
-	virtual std::vector< di_event > read() = 0;
+                unsigned value;
+            } xinput;
+        };
+    };
 
-	virtual void set_focus( bool ) = 0;
+    virtual ~dinput() {}
 
-	virtual void refocus( void * hwnd ) = 0;
+    virtual const char* open(void * di8, void * hwnd, guid_container *) = 0;
 
-	virtual const TCHAR * get_joystick_name( unsigned ) = 0;
+    virtual std::vector< di_event > read() = 0;
+
+    virtual void readmouse(int16_t & x, int16_t & y, bool & lbutton, bool & rbutton) = 0;
+    virtual void poll_mouse() = 0;
+
+    virtual void set_focus(bool) = 0;
+
+    virtual void refocus(void * hwnd) = 0;
+
+    virtual const TCHAR * get_joystick_name(unsigned) = 0;
 };
 
 dinput * create_dinput();

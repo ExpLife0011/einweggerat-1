@@ -99,6 +99,7 @@ public:
         MESSAGE_HANDLER(WM_CREATE, OnCreate)
         MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
         MESSAGE_HANDLER(WM_SIZE, OnSize)
+        MESSAGE_HANDLER(WM_SETCURSOR,OnSetCursor)
         COMMAND_ID_HANDLER(ID_OPTIONS, OnOptions)
         COMMAND_ID_HANDLER_EX(IDC_EXIT, OnFileExit)
         COMMAND_ID_HANDLER(ID_ABOUT, OnAbout)
@@ -137,6 +138,19 @@ public:
         }
 
         return 0;
+    }
+
+
+
+    LRESULT OnSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        POINT pos;
+        if (LOWORD(lParam) == HTCLIENT)
+        {
+            SetCursor(NULL);
+            return true;
+        }
+        return DefWindowProc(uMsg, wParam, lParam);
     }
 
     LRESULT OnReset(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
