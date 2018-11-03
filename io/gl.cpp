@@ -179,10 +179,6 @@ void init_framebuffer(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
-
-
-
 void resize_cb(int width, int height) {
     RECT clientRect;
     GetClientRect(g_video.hwnd, &clientRect);

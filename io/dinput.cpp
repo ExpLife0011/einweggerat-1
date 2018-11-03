@@ -324,6 +324,13 @@ public:
             guids->remove(it->GuidInstance);
         }
 
+        if (lpdMouse)
+        {
+            lpdMouse->Unacquire();
+            lpdMouse->Release();
+        }
+
+
         if (lpdKeyboard) lpdKeyboard->Release();
 
         if (hXInput) FreeLibrary(hXInput);
