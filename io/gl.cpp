@@ -180,7 +180,10 @@ void init_framebuffer(int width, int height)
 }
 
 
-void resize_cb() {
+
+
+
+void resize_cb(int width, int height) {
     RECT clientRect;
     GetClientRect(g_video.hwnd, &clientRect);
     int32_t w = clientRect.right - clientRect.left;
@@ -192,18 +195,26 @@ void resize_cb() {
         g_video.last_w = w;
         g_video.last_h = h;
     }
-    int width = g_video.last_w;
-    int height = (unsigned)floor(width / g_video.aspect);
-    if (height > g_video.last_h)
-    {
-        //It doesn't fit our height, we must switch to pillarbox then
-        height = g_video.last_h;
-        width = (unsigned)floor(height * g_video.aspect);
+    RECT drawRect;
+    double aspect = (double)width / height;
+    if (height > 0 && height <= g_video.last_h && (int)(height * aspect) <= g_video.last_w) {
+        int h;
+        for (h = height * 2; h <= g_video.last_h && (int)(h * aspect) <= g_video.last_w; h += height) {}
+        h -= height;
+        drawRect.right = (LONG)(h * aspect);
+        drawRect.bottom = h;
     }
-    // set up the new viewport centered in the backbuffer
-    int vp_x = ((w - width) / 2);
-    int vp_y = ((h - height) / 2);
-    glViewport(vp_x, vp_y, width, height);
+    else {
+        drawRect.top = 0;
+        drawRect.left = 0;
+        drawRect.right = g_video.last_w;
+        drawRect.bottom = g_video.last_h;
+    }
+    drawRect.left = (g_video.last_w - drawRect.right) / 2;
+    drawRect.top = (g_video.last_h - drawRect.bottom) / 2;
+    drawRect.right += drawRect.left;
+    drawRect.bottom += drawRect.top;
+    glViewport(drawRect.left, g_video.last_h - drawRect.bottom, drawRect.right - drawRect.left, drawRect.bottom - drawRect.top);
 }
 
 void create_window(int width, int height, HWND hwnd) {
@@ -363,9 +374,11 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         g_video.base_w = width;
 
         refresh_vertex_data();
+
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    resize_cb(width, height);
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
     if (pitch != g_video.pitch) {
@@ -377,11 +390,6 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
             g_video.pixtype, g_video.pixfmt, data);
     }
-
-
-
-
-    resize_cb();
 
     glClear(GL_COLOR_BUFFER_BIT);
 

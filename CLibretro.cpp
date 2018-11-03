@@ -244,7 +244,7 @@ bool core_environment(unsigned cmd, void *data) {
                 CString str = var->description;
                 int id = var->id;
                 int index = var->index;
-                if (var->device == RETRO_DEVICE_ANALOG || (var->device == RETRO_DEVICE_JOYPAD)))
+                if (var->device == RETRO_DEVICE_ANALOG || (var->device == RETRO_DEVICE_JOYPAD))
                 {
                 if (var->device == RETRO_DEVICE_ANALOG)
                     id = (index == RETRO_DEVICE_INDEX_ANALOG_LEFT) ? (var->id == RETRO_DEVICE_ID_ANALOG_X ? 16 : 17) :
@@ -686,7 +686,7 @@ bool CLibretro::init_common() {
         return false;
     }
     g_retro.retro_get_system_av_info(&av);
-    g_retro.retro_set_controller_port_device(0, RETRO_DEVICE_MOUSE);
+    g_retro.retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
 
     ::video_configure(&av.geometry, emulator_hwnd);
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {
