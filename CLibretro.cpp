@@ -686,7 +686,7 @@ bool CLibretro::init_common() {
         return false;
     }
     g_retro.retro_get_system_av_info(&av);
-    g_retro.retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
+   // g_retro.retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
 
     ::video_configure(&av.geometry, emulator_hwnd);
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {
