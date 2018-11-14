@@ -571,27 +571,10 @@ public:
       return TRUE;
    }
 
-   void save()
-   {
-      FILE *fp = NULL;
-      ini_t* ini = ini_create(NULL);
-      for (int i = 0; i < retro->variables.size(); i++) {
-         ini_property_add(ini, INI_GLOBAL_SECTION, retro->variables[i].name.c_str(), strlen(retro->variables[i].name.c_str()), retro->variables[i].var.c_str(),
-            strlen(retro->variables[i].var.c_str()));
-      }
-      int size = ini_save(ini, NULL, 0); // Find the size needed
-      char* data = (char*)malloc(size);
-      size = ini_save(ini, data, size); // Actually save the file	
-      ini_destroy(ini);
-      fp = _wfopen(retro->core_config, L"w");
-      fwrite(data, 1, size, fp);
-      fclose(fp);
-      free(data);
-   }
-
    LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
    {
-      save();
+
+       save_coresettings();
       return 0;
    }
 };

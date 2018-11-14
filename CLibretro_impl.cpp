@@ -22,6 +22,42 @@ using namespace utf8util;
 static struct retro_frame_time_callback runloop_frame_time;
 static struct retro_audio_callback audio_callback;
 
+
+unsigned char* load_inputsettings(TCHAR* path, unsigned * size)
+{
+    FILE *fp = _wfopen(path, L"r");
+    if (fp)
+    {
+        fseek(fp, 0, SEEK_END);
+        int size_ = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        char* data = (char*)malloc(size_ + 1);
+        fread(data, 1, size_, fp);
+        data[size_] = '\0';
+        fclose(fp);
+        ini_t* ini = ini_load(data, NULL);
+        free(data);
+        int section = ini_find_section(ini, "Input Settings", strlen("Input Settings"));
+        if (section == INI_NOT_FOUND)
+        {
+            ini_destroy(ini);
+            free(data);
+            fclose(fp);
+            return NULL;
+        }
+        int index = ini_find_property(ini, section, "Data", strlen("Data"));
+        char const* text = ini_property_value(ini, section, index);
+        tstring ansi = utf16_from_utf8(text);
+        unsigned len = 0;
+        unsigned char * data2 = Mud_Base64::decode(ansi.c_str(), &len);
+        *size = len;
+        free(data);
+        ini_destroy(ini);
+        return data2;
+    }
+    return NULL;
+}
+
 const char* load_coresettings(retro_variable *var) {
     CLibretro *retro = CLibretro::GetInstance();
     for (int i = 0; i < retro->variables.size(); i++)
@@ -32,6 +68,55 @@ const char* load_coresettings(retro_variable *var) {
         }
     }
     return NULL;
+}
+
+
+void save_coresettings()
+{
+    CLibretro *retro = CLibretro::GetInstance();
+    FILE *fp  = _wfopen(retro->core_config, L"r+");
+    ini_t* ini = NULL;
+    char* data = NULL;
+    if (fp)
+    {
+        fseek(fp, 0, SEEK_END);
+        int size = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        data = (char*)malloc(size + 1);
+        fread(data, 1, size, fp);
+        rewind(fp);
+        data[size] = '\0';
+        ini = ini_load(data, NULL);
+        for (int i = 0; i < retro->variables.size(); i++) {
+
+            int idx = ini_find_property(ini, INI_GLOBAL_SECTION, (char*)retro->variables[i].name.c_str(),
+                strlen(retro->variables[i].name.c_str()));
+                ini_property_value_set(ini, INI_GLOBAL_SECTION, idx,
+                    retro->variables[i].var.c_str(), strlen(retro->variables[i].var.c_str()));
+        }
+       
+        free(data);
+        size = ini_save(ini, NULL, 0); // Find the size needed
+        data = (char*)malloc(size);
+        size = ini_save(ini, data, size); // Actually save the file	
+        fwrite(data, 1, size, fp);
+    }
+    else
+    {
+        ini = ini_create(NULL);
+        for (int i = 0; i < retro->variables.size(); i++) {
+                ini_property_add(ini, INI_GLOBAL_SECTION, retro->variables[i].name.c_str(), strlen(retro->variables[i].name.c_str()), retro->variables[i].var.c_str(),
+                    strlen(retro->variables[i].var.c_str()));
+        }
+        int size = ini_save(ini, NULL, 0); // Find the size needed
+        data = (char*)malloc(size);
+        size = ini_save(ini, data, size); // Actually save the file	
+        fwrite(data, 1, size, fp);
+     
+    }
+    ini_destroy(ini);
+    fclose(fp);
+    free(data);
 }
 
 void init_coresettings(retro_variable *var) {
@@ -124,6 +209,7 @@ void init_coresettings(retro_variable *var) {
             free(data);
         }
         ini_destroy(ini);
+        fclose(fp);
     }
 }
 

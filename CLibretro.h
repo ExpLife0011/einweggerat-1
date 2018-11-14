@@ -21,6 +21,7 @@ namespace std
 extern "C" {
 #endif
     void load_envsymb(HMODULE handle);
+    void save_coresettings();
 #ifdef __cplusplus
 }
 #endif

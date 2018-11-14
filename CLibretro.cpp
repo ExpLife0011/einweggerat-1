@@ -19,40 +19,6 @@
 using namespace std;
 using namespace utf8util;
 
-unsigned char* load_inputsettings(TCHAR* path, unsigned * size)
-{
-    FILE *fp = _wfopen(path, L"r");
-    if (fp)
-    {
-        fseek(fp, 0, SEEK_END);
-        int size_ = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        char* data = (char*)malloc(size_ + 1);
-        fread(data, 1, size_, fp);
-        data[size_] = '\0';
-        fclose(fp);
-        ini_t* ini = ini_load(data, NULL);
-        free(data);
-        int section = ini_find_section(ini, "Input Settings", strlen("Input Settings"));
-        if (section == INI_NOT_FOUND)
-        {
-            ini_destroy(ini);
-            free(data);
-            fclose(fp);
-            return NULL;
-        }
-        int index = ini_find_property(ini, section, "Data",strlen("Data"));
-        char const* text = ini_property_value(ini, section, index);
-        tstring ansi = utf16_from_utf8(text);
-        unsigned len = 0;
-        unsigned char * data2=Mud_Base64::decode(ansi.c_str(), &len);
-        *size = len;
-        free(data);
-        ini_destroy(ini);
-        return data2;
-    }
-    return NULL;
-}
 
 bool CLibretro::savestate(TCHAR* filename, bool save) {
     if (isEmulating)
