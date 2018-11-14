@@ -65,27 +65,7 @@ static mal_uint32 audio_callback(mal_device* pDevice, mal_uint32 frameCount, voi
 static retro_time_t frame_limit_minimum_time = 0.0;
 static retro_time_t frame_limit_last_time = 0.0;
 
-static double PerfFrequencyInverse = 0.;
-static void InitPerfFrequencyInverse()
-{
-    LARGE_INTEGER freq = {};
-    if (!::QueryPerformanceFrequency(&freq) || freq.QuadPart == 0)
-        return;
-    PerfFrequencyInverse = 1000000. / (double)freq.QuadPart;
-}
 
-long long milliseconds_now() {
-    return microseconds_now() / 1000;
-}
-
-long long microseconds_now() {
-    LARGE_INTEGER timeStamp = {};
-    if (!::QueryPerformanceCounter(&timeStamp))
-        return 0;
-    if (PerfFrequencyInverse == 0.)
-        InitPerfFrequencyInverse();
-    return (uint64_t)(PerfFrequencyInverse * timeStamp.QuadPart);
-}
 
 bool Audio::init(double refreshra, retro_system_av_info av)
 {
@@ -123,7 +103,6 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     output_float = new float[sampsize * 2]; //spare space for resampler
     input_float = new float[FRAME_COUNT * 4];
     if (mal_device_start(&device) != MAL_SUCCESS)return false;
-    frame_limit_last_time = microseconds_now();
     frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / (av.timing.fps));
     return true;
 }

@@ -191,26 +191,25 @@ void resize_cb(int width, int height) {
         g_video.last_w = w;
         g_video.last_h = h;
     }
-    RECT drawRect;
-    double aspect = (double)width / height;
-    if (height > 0 && height <= g_video.last_h && (int)(height * aspect) <= g_video.last_w) {
-        int h;
-        for (h = height * 2; h <= g_video.last_h && (int)(h * aspect) <= g_video.last_w; h += height) {}
-        h -= height;
-        drawRect.right = (LONG)(h * aspect);
-        drawRect.bottom = h;
-    }
-    else {
-        drawRect.top = 0;
-        drawRect.left = 0;
-        drawRect.right = g_video.last_w;
-        drawRect.bottom = g_video.last_h;
-    }
-    drawRect.left = (g_video.last_w - drawRect.right) / 2;
-    drawRect.top = (g_video.last_h - drawRect.bottom) / 2;
-    drawRect.right += drawRect.left;
-    drawRect.bottom += drawRect.top;
-    glViewport(drawRect.left, g_video.last_h - drawRect.bottom, drawRect.right - drawRect.left, drawRect.bottom - drawRect.top);
+   
+    double aspect = (double)width / (double)height;
+    unsigned width_calc = width;
+    unsigned height_calc = height;
+    if (height_calc / height_calc > aspect)
+        width_calc = height_calc * aspect;
+    else if (width_calc / height_calc < aspect)
+        height_calc = width_calc / aspect;
+    unsigned x = (unsigned)g_video.last_w / width_calc;
+    unsigned y = (unsigned)g_video.last_h / height_calc;
+    unsigned factor = x < y ? x : y;
+    RECT view;
+    view.right = (unsigned)(width_calc* factor);
+    view.bottom = (unsigned)(height_calc * factor);
+    view.left = (g_video.last_w - view.right) / 2;
+    view.top = (g_video.last_h - view.bottom) / 2;
+    view.right += view.left;
+    view.bottom += view.top;
+    glViewport(view.left, g_video.last_h - view.bottom, view.right - view.left, view.bottom - view.top);
 }
 
 void create_window(int width, int height, HWND hwnd) {
@@ -332,7 +331,6 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
     g_video.aspect = geom->aspect_ratio;
 
     refresh_vertex_data();
-
     if (g_video.hw.context_reset)g_video.hw.context_reset();
 }
 

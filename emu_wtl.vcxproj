@@ -204,7 +204,13 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="3rdparty\cmdline.h" />
+    <ClInclude Include="3rdparty\ini.h" />
+    <ClInclude Include="3rdparty\khrplatform.h" />
     <ClInclude Include="3rdparty\libretro.h" />
+    <ClInclude Include="3rdparty\mini_al.h" />
+    <ClInclude Include="3rdparty\resampler.h" />
+    <ClInclude Include="3rdparty\rthreads.h" />
     <ClInclude Include="CLibretro.h" />
     <ClInclude Include="gui\DropFileTarget.h" />
     <ClInclude Include="gui\emu_wtl.h" />
@@ -225,6 +231,7 @@
     <ClInclude Include="io\gl_render.h" />
     <ClInclude Include="io\guid_container.h" />
     <ClInclude Include="io\input.h" />
+    <ClInclude Include="mudlib.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -233,6 +240,7 @@
     <ClCompile Include="3rdparty\resampler.c" />
     <ClCompile Include="3rdparty\rthreads.c" />
     <ClCompile Include="CLibretro.cpp" />
+    <ClCompile Include="CLibretro_impl.cpp" />
     <ClCompile Include="gui\emu_wtl.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\StdAfx.h</PrecompiledHeaderFile>

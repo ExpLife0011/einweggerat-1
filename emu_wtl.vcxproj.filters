@@ -4,16 +4,16 @@
     <ClCompile Include="CLibretro.cpp" />
     <ClCompile Include="gui\emu_wtl.cpp" />
     <ClCompile Include="io\abstract_file.cpp">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClCompile>
     <ClCompile Include="io\bind_list.cpp">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClCompile>
     <ClCompile Include="io\blargg_common.cpp">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClCompile>
     <ClCompile Include="io\blargg_errors.cpp">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClCompile>
     <ClCompile Include="io\dinput.cpp">
       <Filter>io</Filter>
@@ -21,16 +21,7 @@
     <ClCompile Include="io\gl.cpp">
       <Filter>io</Filter>
     </ClCompile>
-    <ClCompile Include="io\guid_container.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
     <ClCompile Include="io\input.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
-    <ClCompile Include="io\Data_Reader.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
-    <ClCompile Include="3rdparty\resampler.c">
       <Filter>io</Filter>
     </ClCompile>
     <ClCompile Include="io\audio.cpp">
@@ -39,36 +30,46 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>gui</Filter>
     </ClCompile>
-    <ClCompile Include="3rdparty\rthreads.c">
-      <Filter>io</Filter>
-    </ClCompile>
     <ClCompile Include="3rdparty\glad.c">
       <Filter>io</Filter>
     </ClCompile>
+    <ClCompile Include="io\guid_container.cpp">
+      <Filter>3rdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\resampler.c">
+      <Filter>3rdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\rthreads.c">
+      <Filter>3rdparty</Filter>
+    </ClCompile>
+    <ClCompile Include="io\Data_Reader.cpp">
+      <Filter>3rdparty\blargg</Filter>
+    </ClCompile>
+    <ClCompile Include="CLibretro_impl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLibretro.h" />
     <ClInclude Include="gui\emu_wtl.h" />
     <ClInclude Include="io\blargg_source.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\abstract_file.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\bind_list.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\blargg_common.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\blargg_config.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\blargg_endian.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\blargg_errors.h">
-      <Filter>blargg</Filter>
+      <Filter>3rdparty\blargg</Filter>
     </ClInclude>
     <ClInclude Include="io\dinput.h">
       <Filter>io</Filter>
@@ -76,13 +77,7 @@
     <ClInclude Include="io\gl_render.h">
       <Filter>io</Filter>
     </ClInclude>
-    <ClInclude Include="io\guid_container.h">
-      <Filter>io</Filter>
-    </ClInclude>
     <ClInclude Include="io\input.h">
-      <Filter>io</Filter>
-    </ClInclude>
-    <ClInclude Include="io\Data_Reader.h">
       <Filter>io</Filter>
     </ClInclude>
     <ClInclude Include="io\audio.h">
@@ -110,6 +105,31 @@
     <ClInclude Include="gui\Options.h">
       <Filter>gui</Filter>
     </ClInclude>
+    <ClInclude Include="io\guid_container.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\cmdline.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\ini.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\khrplatform.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\mini_al.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\resampler.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\rthreads.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="io\Data_Reader.h">
+      <Filter>3rdparty\blargg</Filter>
+    </ClInclude>
+    <ClInclude Include="mudlib.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\emu_wtl.rc" />
@@ -129,14 +149,17 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="blargg">
-      <UniqueIdentifier>{102af96c-587b-4b93-b8c3-a8039c01e08f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="io">
       <UniqueIdentifier>{d1bc58e8-62ef-4db2-9c8a-646c5f894846}</UniqueIdentifier>
     </Filter>
     <Filter Include="gui">
       <UniqueIdentifier>{55c6abfd-f0b1-4f38-96ad-4c11e969efbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty">
+      <UniqueIdentifier>{cd431873-2c66-44c2-aa24-dc75ee6efb9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\blargg">
+      <UniqueIdentifier>{102af96c-587b-4b93-b8c3-a8039c01e08f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

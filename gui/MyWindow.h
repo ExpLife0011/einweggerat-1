@@ -246,8 +246,8 @@ public:
         CMessageLoop* pLoop = _Module.GetMessageLoop();
         ATLASSERT(pLoop != NULL);
         bHandled = FALSE;
-        input_device = input::CreateInstance(GetModuleHandle(NULL), m_hWnd);
-        emulator = CLibretro::CreateInstance(m_hWnd);
+        input_device = input::GetInstance(GetModuleHandle(NULL), m_hWnd);
+        emulator = CLibretro::GetInstance(m_hWnd);
         m_haccelerator = AtlLoadAccelerators(IDR_ACCELERATOR1);
         pLoop->AddMessageFilter(this);
         RegisterDropTarget();
@@ -270,7 +270,7 @@ public:
             DestroyWindow();
             return;
         }
-        if (!emulator->loadfile(rom_filename, core_filename, specifics, threads))
+        if (!emulator->loadfile(rom_filename, core_filename, specifics))
             DestroyWindow();
     }
 

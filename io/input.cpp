@@ -4,7 +4,7 @@ static const GUID g_signature = { 0x925c561e, 0xfdfe, 0x40b3, { 0x9a, 0xe9, 0xbf
 
 
 input* input::m_Instance = 0;
-input* input::CreateInstance(HINSTANCE hInstance, HWND hWnd)
+input* input::GetInstance(HINSTANCE hInstance, HWND hWnd)
 {
     if (0 == m_Instance)
     {
@@ -15,10 +15,6 @@ input* input::CreateInstance(HINSTANCE hInstance, HWND hWnd)
     return m_Instance;
 }
 
-input* input::GetSingleton()
-{
-    return m_Instance;
-}
 
 void input::close()
 {

@@ -108,8 +108,8 @@ public:
 
    LRESULT OnInitDialogView1(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
    {
-      input = input::GetSingleton();
-      CLibretro* lib = CLibretro::GetSingleton();
+      input = input::GetInstance();
+      CLibretro* lib = CLibretro::GetInstance();
       bl = input->bl;
       guids = input->guids;
       di = create_dinput();
@@ -497,7 +497,7 @@ public:
 
    LRESULT OnInitDialogView1(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
    {
-      retro = CLibretro::GetSingleton();
+      retro = CLibretro::GetInstance();
       m_grid.SubclassWindow(GetDlgItem(IDC_LIST_VARIABLES));
       m_grid.InsertColumn(0, _T("Option"), LVCFMT_LEFT, 200, 0);
       m_grid.InsertColumn(1, _T("Setting"), LVCFMT_LEFT, 150, 0);
@@ -583,7 +583,7 @@ public:
       char* data = (char*)malloc(size);
       size = ini_save(ini, data, size); // Actually save the file	
       ini_destroy(ini);
-      fp = _wfopen(retro->corevar_path, L"w");
+      fp = _wfopen(retro->core_config, L"w");
       fwrite(data, 1, size, fp);
       fclose(fp);
       free(data);

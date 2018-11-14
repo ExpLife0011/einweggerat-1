@@ -22,12 +22,11 @@ class input
   //HWND                    hWnd;
 public:
   int list_count;
-  TCHAR path[MAX_PATH];
   input();
   ~input();
   unsigned                bits;
   LPDIRECTINPUT8          lpDI;
-
+  TCHAR path[MAX_PATH];
   guid_container        * guids;
   dinput                * di;
   bind_list             * bl;
@@ -37,8 +36,7 @@ public:
 
 
 
-  static input* CreateInstance(HINSTANCE hInstance, HWND hWnd);
-  static	input* GetSingleton();
+  static input* GetInstance(HINSTANCE hInstance = NULL, HWND hWnd=NULL);
   const char* open(HINSTANCE hInstance, HWND hWnd);
   void close();
   // configuration
