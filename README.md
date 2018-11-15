@@ -1,6 +1,6 @@
 # einweggerät
 
-Binaries: http://rebote.net/random/einweggerat.zip
+**Binary builds**: http://rebote.net/random/einweggerat.zip
 
 ![einweggerät](https://rebote.net/linkage/einweg1.PNG)
 
