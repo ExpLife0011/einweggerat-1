@@ -334,7 +334,6 @@ bool core_environment(unsigned cmd, void *data) {
         if (config)
         {
             Mem_File_Reader out(config,sz);
-            input_device->bl->clear();
             const char *err = input_device->load(out);
             if (!err)
             {
