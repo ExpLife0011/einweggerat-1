@@ -1,5 +1,7 @@
 # einweggerät
 
+Binaries: http://rebote.net/random/einweggerat.zip
+
 ![einweggerät](https://rebote.net/linkage/einweg1.PNG)
 
 **Meant to be only something for debugging Win32/Win64 libretro cores.
