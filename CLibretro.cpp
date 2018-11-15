@@ -67,12 +67,12 @@ bool CLibretro::savesram(TCHAR* filename, bool save) {
             }
             else
             {
-             unsigned sz;
-             BYTE* save_data = (BYTE*)Mud_FileAccess::load_data(filename, &sz);
-             if (!save_data)return false;
-              memcpy(Memory,save_data, size);
-              free(save_data);
-              return true;
+                unsigned sz;
+                BYTE* save_data = (BYTE*)Mud_FileAccess::load_data(filename, &sz);
+                if (!save_data)return false;
+                memcpy(Memory, save_data, size);
+                free(save_data);
+                return true;
             }
         }
     }
@@ -94,15 +94,18 @@ void CLibretro::core_unload() {
     {
         FreeLibrary(g_retro.handle);
         g_retro.handle = NULL;
-        g_retro = { 0 };
     }
+    memset(&g_retro, 0, sizeof(g_retro));
 }
 
 bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_filename) {
     TCHAR game_filename_[MAX_PATH] = { 0 };
-    
-    core_unload();
-    memset(&g_retro, 0, sizeof(g_retro));
+
+    ZeroMemory(core_config, sizeof(TCHAR)*MAX_PATH);
+    ZeroMemory(exe_dir, sizeof(TCHAR)*MAX_PATH);
+    ZeroMemory(save_name, sizeof(TCHAR)*MAX_PATH);
+    ZeroMemory(input_config, sizeof(TCHAR)*MAX_PATH);
+
     g_retro.handle = LoadLibrary(sofile);
     if (!g_retro.handle)return false;
 #define die() do { FreeLibrary(g_retro.handle); return false; } while(0)
@@ -124,12 +127,12 @@ bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_f
     load_retro_sym(retro_serialize_size);
     load_retro_sym(retro_get_memory_size);
     load_retro_sym(retro_get_memory_data);
-   
+
 
     lstrcpy(game_filename_, game_filename);
     PathStripPath(game_filename_);
     PathRemoveExtension(game_filename_);
-    
+
 
     TCHAR einweg_dir[MAX_PATH] = { 0 };
     GetCurrentDirectory(MAX_PATH, einweg_dir);
@@ -137,6 +140,9 @@ bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_f
     lstrcpy(save_name, einweg_dir);
     PathAppend(save_name, game_filename_);
     lstrcat(save_name, L".sav");
+
+  
+   
 
     if (gamespecificoptions)
     {
@@ -177,16 +183,12 @@ CLibretro* CLibretro::GetInstance(HWND hwnd) {
     return m_Instance;
 }
 
-//CLibretro* CLibretro::GetInstance() {
- //   return m_Instance;
-//}
-
 bool CLibretro::running() {
     return isEmulating;
 }
 
 CLibretro::CLibretro() {
-    g_retro = { 0 };
+    memset(&g_retro, 0, sizeof(g_retro));
     isEmulating = false;
 }
 
@@ -197,12 +199,13 @@ CLibretro::~CLibretro(void) {
 
 bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecificoptions)
 {
-    core_config[MAX_PATH] = { 0 };
+  
     if (isEmulating)
     {
         kill();
         isEmulating = false;
     }
+   
     double refreshr = 0;
     DEVMODE lpDevMode;
     struct retro_system_info system = { 0 };
@@ -271,22 +274,22 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
 
 void CLibretro::run()
 {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        g_retro.retro_run();
+    g_retro.retro_run();
 
-        double currentTime = (double)mudtime.milliseconds_now() / 1000;
-        if (currentTime - lastTime >= 0.5) { // If last prinf() was more than 1 sec ago
-                           // printf and reset timer
-            TCHAR buffer[200] = { 0 };
-            int len = swprintf(buffer, 200, L"einweggerät: %2f ms/frame\n, min %d VPS", 1000.0 / double(nbFrames), nbFrames);
-            SetWindowText(emulator_hwnd, buffer);
-            nbFrames = 0;
-            lastTime += 1.0;
-        }
-        nbFrames++;
+    double currentTime = (double)mudtime.milliseconds_now() / 1000;
+    if (currentTime - lastTime >= 0.5) { // If last prinf() was more than 1 sec ago
+                       // printf and reset timer
+        TCHAR buffer[200] = { 0 };
+        int len = swprintf(buffer, 200, L"einweggerät: %2f ms/frame\n, min %d VPS", 1000.0 / double(nbFrames), nbFrames);
+        SetWindowText(emulator_hwnd, buffer);
+        nbFrames = 0;
+        lastTime += 1.0;
+    }
+    nbFrames++;
 }
 
 bool CLibretro::init(HWND hwnd)
@@ -299,16 +302,13 @@ bool CLibretro::init(HWND hwnd)
 void CLibretro::kill()
 {
 
-        if (isEmulating)
-        {
-            isEmulating = false;
-            core_unload();
-            if (info.data)
-                free((void*)info.data);
-            _audio.destroy();
-            video_deinit();
-            input *input_device = input::GetInstance();
-            input_device->bl->clear();
-
-        }
+    if (isEmulating)
+    {
+        isEmulating = false;
+        core_unload();
+        if (info.data)
+            free((void*)info.data);
+        _audio.destroy();
+        video_deinit();
+    }
 }

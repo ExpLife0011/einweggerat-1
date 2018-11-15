@@ -10,7 +10,6 @@ public:
    CEdit   editevent;
    input				   * input;
    dinput                 * di;
-   bind_list              * bl;
    bool					 notify_d;
    bool                     have_event;
    dinput::di_event         last_event;
@@ -43,11 +42,10 @@ public:
 
    LRESULT OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
    {
-      input->bl = bl->copy();
-      Mem_Writer out2;
+     /* Mem_Writer out2;
       input->save(out2);
       save_inputsettings((unsigned char*)out2.data(), out2.size());
-      MessageBox(L"Settings saved", L"Input settings", MB_OK);
+      MessageBox(L"Settings saved", L"Input settings", MB_OK);*/
       return 0;
    }
 
@@ -80,11 +78,9 @@ public:
          unsigned         action;
          unsigned retro_id;
          TCHAR description[64] = { 0 };
-         bl->get(n, e, action, description, retro_id);
+         input->bl->get(n, e, action, description, retro_id);
          add_to_list(assign, last_event, action, n, description, true);
-         bl->replace(n, last_event, action, description, retro_id);
-
-         input->bl = bl->copy();
+         input->bl->replace(n, last_event, action, description, retro_id);
          Mem_Writer out2;
          input->save(out2);
          save_inputsettings((unsigned char*)out2.data(), out2.size());
@@ -104,7 +100,6 @@ public:
    {
       input = input::GetInstance();
       CLibretro* lib = CLibretro::GetInstance();
-      bl = input->bl;
       guids = input->guids;
       di = create_dinput();
       if (di->open(input->lpDI, GetParent(), input->guids))
@@ -119,7 +114,7 @@ public:
 
 
       {
-         if(assign.GetCountPerPage())assign.DeleteAllItems();
+         assign.DeleteAllItems();
          LVCOLUMN lvc;
          memset(&lvc, 0, sizeof(lvc));
          lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
@@ -140,10 +135,10 @@ public:
          unsigned         action;
          unsigned retro_id;
         
-         for (unsigned i = 0, j = bl->get_count(); i < j; ++i)
+         for (unsigned i = 0, j = input->bl->get_count(); i < j; ++i)
          {
             TCHAR description[64] = { 0 };
-            bl->get(i, e, action, description, retro_id);
+            input->bl->get(i, e, action, description, retro_id);
             std::tostringstream event_text;
             format_event(e, event_text);
             add_to_list(assign, e, action, INT_MAX, description);
@@ -494,6 +489,7 @@ public:
    {
       retro = CLibretro::GetInstance();
       m_grid.SubclassWindow(GetDlgItem(IDC_LIST_VARIABLES));
+      m_grid.DeleteAllItems();
       m_grid.InsertColumn(0, _T("Option"), LVCFMT_LEFT, 200, 0);
       m_grid.InsertColumn(1, _T("Setting"), LVCFMT_LEFT, 150, 0);
       m_grid.SetExtendedGridStyle(PGS_EX_SINGLECLICKEDIT);

@@ -49,12 +49,12 @@ unsigned char* load_inputsettings(TCHAR* path, unsigned * size)
             char const* text = ini_property_value(ini, section, index);
             tstring ansi = utf16_from_utf8(text);
             unsigned len = 0;
-            unsigned char * data2 = Mud_Base64::decode(ansi.c_str(),ansi.length(), &len);
+            unsigned char * data2 = Mud_Base64::decode(ansi.c_str(), ansi.length(), &len);
             *size = len;
             ini_destroy(ini);
             return data2;
         }
-      
+
     }
     return NULL;
 }
@@ -102,7 +102,7 @@ void save_inputsettings(unsigned char* data_ptr, unsigned data_sz)
         }
         else
         {
-            section = ini_section_add(ini, "Input Settings",strlen("Input Settings"));
+            section = ini_section_add(ini, "Input Settings", strlen("Input Settings"));
             ini_property_add(ini, section, "Data", strlen("Data"),
                 ansi.c_str(), outbaselen);
         }
@@ -122,7 +122,7 @@ void save_inputsettings(unsigned char* data_ptr, unsigned data_sz)
 void save_coresettings()
 {
     CLibretro *retro = CLibretro::GetInstance();
-    FILE *fp  = _wfopen(retro->core_config, L"r+");
+    FILE *fp = _wfopen(retro->core_config, L"r+");
     ini_t* ini = NULL;
     char* data = NULL;
     if (fp)
@@ -151,7 +151,7 @@ void save_coresettings()
         ini_destroy(ini);
         fclose(fp);
     }
-    if(data)free(data);
+    if (data)free(data);
 }
 
 void init_coresettings(retro_variable *var) {
@@ -183,7 +183,7 @@ void init_coresettings(retro_variable *var) {
     {
         //create a new file with defaults
         ini_t * ini = ini_create(NULL);
-        int section = ini_section_add(ini, "Core Settings",strlen("Core Settings"));
+        int section = ini_section_add(ini, "Core Settings", strlen("Core Settings"));
         for (int i = 0; i < variables.size(); i++)
         {
             ini_property_add(ini, section, (char*)variables[i].name.c_str(),
@@ -313,7 +313,7 @@ bool core_environment(unsigned cmd, void *data) {
     case RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY: // 9
     case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY: // 31
     {
-        static char *sys_path = NULL;
+        char *sys_path = NULL;
         if (!sys_path)
         {
             string ansi = utf8_from_utf16(retro->exe_dir);
@@ -329,16 +329,16 @@ bool core_environment(unsigned cmd, void *data) {
     {
         char variable_val2[50] = { 0 };
         unsigned sz = 0;
-        unsigned char *config = load_inputsettings(retro->core_config,&sz);
-        
+        unsigned char *config = load_inputsettings(retro->core_config, &sz);
+
         if (config)
         {
-            Mem_File_Reader out(config,sz);
+            Mem_File_Reader out(config, sz);
             const char *err = input_device->load(out);
             if (!err)
             {
                 struct retro_input_descriptor *var = (struct retro_input_descriptor *)data;
-                static int i = 0;
+                int i = 0;
                 while (var != NULL && var->port == 0) {
                     var++; i++;
                 }
@@ -355,7 +355,7 @@ bool core_environment(unsigned cmd, void *data) {
         {
         init:
             struct retro_input_descriptor *var = (struct retro_input_descriptor *)data;
-            static int i = 0;
+            int i = 0;
             while (var != NULL && var->port == 0)
             {
                 dinput::di_event keyboard;
@@ -377,11 +377,11 @@ bool core_environment(unsigned cmd, void *data) {
             }
             Mem_Writer out2;
             input_device->save(out2);
-             save_inputsettings((unsigned char*)out2.data(), out2.size());
-            }
-        return true;
+            save_inputsettings((unsigned char*)out2.data(), out2.size());
         }
-    
+        return true;
+    }
+
     break;
 
     case RETRO_ENVIRONMENT_SET_VARIABLES:
