@@ -15,25 +15,38 @@ class Mud_Base64
 public:
     static TCHAR* encode(const BYTE* buf, unsigned int buflen, unsigned * outlen)
     {
+        DWORD out_sz;
         TCHAR* out = NULL;
-        DWORD size = 0;
-        if (CryptBinaryToString(buf, buflen, CRYPT_STRING_BASE64, NULL, &size)) {
-            size++;
-            out = (TCHAR*)malloc(size);
-            CryptBinaryToString(buf, size, CRYPT_STRING_BASE64, out, &size);
+        if (CryptBinaryToString(buf, buflen, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, out, &out_sz)) {
+            out = (TCHAR*)malloc((out_sz) * sizeof(TCHAR));
+            ZeroMemory(out, (out_sz) * sizeof(TCHAR));
+            if (CryptBinaryToString(buf, buflen, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, out, &out_sz))
+            {
+                *outlen = out_sz;
+                return out;
+            }
+            else
+                return NULL;
+           
         }
-        *outlen = size;
-        return out;
-    }
-    static BYTE* decode(const TCHAR * string, unsigned int * outlen)
-    {
+        else
         return NULL;
+        
+    }
+    static BYTE* decode(const TCHAR * string,int inlen, unsigned int * outlen)
+    {
         BYTE *result = NULL;
         DWORD out_sz = 0;
-        if (CryptStringToBinary(string, wcslen(string), CRYPT_STRING_BASE64, NULL, &out_sz, NULL, NULL))
+        
+        if (CryptStringToBinary(string, inlen, CRYPT_STRING_BASE64, NULL, &out_sz, NULL, NULL))
         {
-            result = (BYTE*)malloc(out_sz);
-            CryptStringToBinary(string, wcslen(string), CRYPT_STRING_BASE64, (BYTE*)result, &out_sz, NULL, NULL);
+            result = (BYTE*)malloc((out_sz)*sizeof(BYTE));
+            ZeroMemory(result, (out_sz) * sizeof(BYTE));
+            CryptStringToBinary(string, inlen, CRYPT_STRING_BASE64, (BYTE*)result, &out_sz, NULL, NULL);
+        }
+        else
+        {
+            return NULL;
         }
         *outlen = out_sz;
         return result;

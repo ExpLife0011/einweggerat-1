@@ -24,7 +24,7 @@ public:
       MESSAGE_HANDLER(WM_TIMER, OnTimer)
       MESSAGE_HANDLER(WM_DESTROY, OnClose)
       COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
-      COMMAND_ID_HANDLER(IDOK, OnOK)
+      COMMAND_ID_HANDLER(ID_SAVE, OnOK)
       NOTIFY_HANDLER(IDC_LIST_ASSIGN, NM_DBLCLK, NotifyHandler)
       NOTIFY_HANDLER(IDC_LIST_ASSIGN, NM_CLICK, NotifyHandlerClick)
    END_MSG_MAP()
@@ -44,12 +44,9 @@ public:
    LRESULT OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
    {
       input->bl = bl->copy();
-      Std_File_Writer_u out2;
-      if (!out2.open(input->path))
-      {
-         input->save(out2);
-         out2.close();
-      }
+      Mem_Writer out2;
+      input->save(out2);
+      save_inputsettings((unsigned char*)out2.data(), out2.size());
       MessageBox(L"Settings saved", L"Input settings", MB_OK);
       return 0;
    }
@@ -88,15 +85,12 @@ public:
          bl->replace(n, last_event, action, description, retro_id);
 
          input->bl = bl->copy();
-         Std_File_Writer_u out2;
-         if (!out2.open(input->path))
-         {
-            input->save(out2);
-            out2.close();
-            ListView_SetSelectionMark(assign, n);
-            editevent.SetWindowTextW(L"Settings saved");
-            return 1;
-         }
+         Mem_Writer out2;
+         input->save(out2);
+         save_inputsettings((unsigned char*)out2.data(), out2.size());
+         ListView_SetSelectionMark(assign, n);
+         editevent.SetWindowTextW(L"Settings saved");
+         return 1;
          
       }
       ListView_SetSelectionMark(assign, n);
@@ -125,9 +119,9 @@ public:
 
 
       {
+         if(assign.GetCountPerPage())assign.DeleteAllItems();
          LVCOLUMN lvc;
          memset(&lvc, 0, sizeof(lvc));
-
          lvc.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
          lvc.fmt = LVCFMT_LEFT;
          lvc.cx = 200;
@@ -141,10 +135,11 @@ public:
 
          assign.InsertColumn(1, &lvc);
          assign.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT);
+        
          dinput::di_event e;
          unsigned         action;
          unsigned retro_id;
-
+        
          for (unsigned i = 0, j = bl->get_count(); i < j; ++i)
          {
             TCHAR description[64] = { 0 };
@@ -573,7 +568,6 @@ public:
 
    LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
    {
-
        save_coresettings();
       return 0;
    }

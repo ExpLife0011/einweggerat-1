@@ -41,19 +41,20 @@ unsigned char* load_inputsettings(TCHAR* path, unsigned * size)
         if (section == INI_NOT_FOUND)
         {
             ini_destroy(ini);
-            free(data);
-            fclose(fp);
             return NULL;
         }
-        int index = ini_find_property(ini, section, "Data", strlen("Data"));
-        char const* text = ini_property_value(ini, section, index);
-        tstring ansi = utf16_from_utf8(text);
-        unsigned len = 0;
-        unsigned char * data2 = Mud_Base64::decode(ansi.c_str(), &len);
-        *size = len;
-        free(data);
-        ini_destroy(ini);
-        return data2;
+        else
+        {
+            int index = ini_find_property(ini, section, "Data", strlen("Data"));
+            char const* text = ini_property_value(ini, section, index);
+            tstring ansi = utf16_from_utf8(text);
+            unsigned len = 0;
+            unsigned char * data2 = Mud_Base64::decode(ansi.c_str(),ansi.length(), &len);
+            *size = len;
+            ini_destroy(ini);
+            return data2;
+        }
+      
     }
     return NULL;
 }
@@ -68,6 +69,53 @@ const char* load_coresettings(retro_variable *var) {
         }
     }
     return NULL;
+}
+
+
+void save_inputsettings(unsigned char* data_ptr, unsigned data_sz)
+{
+    CLibretro *retro = CLibretro::GetInstance();
+    FILE *fp = _wfopen(retro->core_config, L"r");
+    ini_t* ini = NULL;
+    char* data = NULL;
+    if (fp)
+    {
+        fseek(fp, 0, SEEK_END);
+        int size = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        data = (char*)malloc(size + 1);
+        fread(data, 1, size, fp);
+        fclose(fp);
+        fp = _wfopen(retro->core_config, L"w");
+        data[size] = '\0';
+        ini = ini_load(data, NULL);
+
+        int section = ini_find_section(ini, "Input Settings", strlen("Input Settings"));
+        unsigned outbaselen = 0;
+        TCHAR* data2 = Mud_Base64::encode(data_ptr, data_sz, &outbaselen);
+        string ansi = utf8_from_utf16(data2);
+        if (section != INI_NOT_FOUND)
+        {
+            int idx = ini_find_property(ini, section, "Data",
+                strlen("Data"));
+            ini_property_value_set(ini, section, idx, ansi.c_str(), outbaselen);
+        }
+        else
+        {
+            section = ini_section_add(ini, "Input Settings",strlen("Input Settings"));
+            ini_property_add(ini, section, "Data", strlen("Data"),
+                ansi.c_str(), outbaselen);
+        }
+        free(data2);
+        free(data);
+        size = ini_save(ini, NULL, 0); // Find the size needed
+        data = (char*)malloc(size);
+        size = ini_save(ini, data, size); // Actually save the file	
+        fwrite(data, 1, size, fp);
+        ini_destroy(ini);
+        fclose(fp);
+    }
+    if (data)free(data);
 }
 
 
@@ -87,36 +135,23 @@ void save_coresettings()
         rewind(fp);
         data[size] = '\0';
         ini = ini_load(data, NULL);
+        int section = ini_find_section(ini, "Core Settings", strlen("Core Settings"));
         for (int i = 0; i < retro->variables.size(); i++) {
 
-            int idx = ini_find_property(ini, INI_GLOBAL_SECTION, (char*)retro->variables[i].name.c_str(),
+            int idx = ini_find_property(ini, section, (char*)retro->variables[i].name.c_str(),
                 strlen(retro->variables[i].name.c_str()));
-                ini_property_value_set(ini, INI_GLOBAL_SECTION, idx,
-                    retro->variables[i].var.c_str(), strlen(retro->variables[i].var.c_str()));
+            ini_property_value_set(ini, section, idx,
+                retro->variables[i].var.c_str(), strlen(retro->variables[i].var.c_str()));
         }
-       
         free(data);
         size = ini_save(ini, NULL, 0); // Find the size needed
         data = (char*)malloc(size);
         size = ini_save(ini, data, size); // Actually save the file	
         fwrite(data, 1, size, fp);
+        ini_destroy(ini);
+        fclose(fp);
     }
-    else
-    {
-        ini = ini_create(NULL);
-        for (int i = 0; i < retro->variables.size(); i++) {
-                ini_property_add(ini, INI_GLOBAL_SECTION, retro->variables[i].name.c_str(), strlen(retro->variables[i].name.c_str()), retro->variables[i].var.c_str(),
-                    strlen(retro->variables[i].var.c_str()));
-        }
-        int size = ini_save(ini, NULL, 0); // Find the size needed
-        data = (char*)malloc(size);
-        size = ini_save(ini, data, size); // Actually save the file	
-        fwrite(data, 1, size, fp);
-     
-    }
-    ini_destroy(ini);
-    fclose(fp);
-    free(data);
+    if(data)free(data);
 }
 
 void init_coresettings(retro_variable *var) {
@@ -148,9 +183,10 @@ void init_coresettings(retro_variable *var) {
     {
         //create a new file with defaults
         ini_t * ini = ini_create(NULL);
+        int section = ini_section_add(ini, "Core Settings",strlen("Core Settings"));
         for (int i = 0; i < variables.size(); i++)
         {
-            ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables[i].name.c_str(),
+            ini_property_add(ini, section, (char*)variables[i].name.c_str(),
                 strlen(variables[i].name.c_str()), (char*)variables[i].var.c_str(), strlen(variables[i].var.c_str()));
             retro->variables.push_back(variables[i]);
         }
@@ -175,24 +211,26 @@ void init_coresettings(retro_variable *var) {
         ini_t* ini = ini_load(data, NULL);
         free(data);
         int num_vars = variables.size();
-        int vars_infile = ini_property_count(ini, INI_GLOBAL_SECTION);
+        int section = ini_find_section(ini, "Core Settings", strlen("Core Settings"));
+        int vars_infile = ini_property_count(ini, section);
+
         if (vars_infile != num_vars) {
             fclose(fp);
         }
         bool save = false;
         for (int i = 0; i < num_vars; i++)
         {
-            int idx = ini_find_property(ini, INI_GLOBAL_SECTION, (char*)variables[i].name.c_str(),
+            int idx = ini_find_property(ini, section, (char*)variables[i].name.c_str(),
                 strlen(variables[i].name.c_str()));
             if (idx != INI_NOT_FOUND)
             {
-                const char* variable_val = ini_property_value(ini, INI_GLOBAL_SECTION, idx);
+                const char* variable_val = ini_property_value(ini, section, idx);
                 variables[i].var = variable_val;
                 retro->variables.push_back(variables[i]);
             }
             else
             {
-                ini_property_add(ini, INI_GLOBAL_SECTION, (char*)variables[i].name.c_str(), strlen(variables[i].name.c_str()),
+                ini_property_add(ini, section, (char*)variables[i].name.c_str(), strlen(variables[i].name.c_str()),
                     (char*)variables[i].var.c_str(), strlen(variables[i].var.c_str()));
                 retro->variables.push_back(variables[i]);
                 save = true;
@@ -290,12 +328,14 @@ bool core_environment(unsigned cmd, void *data) {
     case RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS: // 31
     {
         char variable_val2[50] = { 0 };
-        Std_File_Reader_u out;
-        lstrcpy(input_device->path, retro->input_config);
-        if (!out.open(retro->input_config))
+        unsigned sz = 0;
+        unsigned char *config = load_inputsettings(retro->core_config,&sz);
+        
+        if (config)
         {
+            Mem_File_Reader out(config,sz);
+            input_device->bl->clear();
             const char *err = input_device->load(out);
-            out.close();
             if (!err)
             {
                 struct retro_input_descriptor *var = (struct retro_input_descriptor *)data;
@@ -310,6 +350,7 @@ bool core_environment(unsigned cmd, void *data) {
                     goto init;
                 }
             }
+            free(config);
         }
         else
         {
@@ -335,15 +376,13 @@ bool core_environment(unsigned cmd, void *data) {
                 }
                 i++; ++var;
             }
-            Std_File_Writer_u out2;
-            if (!out2.open(retro->input_config))
-            {
-                input_device->save(out2);
-                out2.close();
+            Mem_Writer out2;
+            input_device->save(out2);
+             save_inputsettings((unsigned char*)out2.data(), out2.size());
             }
-        }
         return true;
-    }
+        }
+    
     break;
 
     case RETRO_ENVIRONMENT_SET_VARIABLES:

@@ -87,7 +87,6 @@ const char* input::load(Data_Reader & in)
 {
     const char * err;
     GUID check;
-
     err = in.read(&check, sizeof(check));
     if (!err) { if (check != g_signature) err = "Invalid signature"; }
     if (!err) err = bl->load(in);

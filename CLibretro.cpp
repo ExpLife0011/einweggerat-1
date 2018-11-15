@@ -84,12 +84,17 @@ void CLibretro::reset() {
 }
 
 void CLibretro::core_unload() {
+    isEmulating = false;
     if (g_retro.initialized)
+    {
+        g_retro.retro_unload_game();
         g_retro.retro_deinit();
+    }
     if (g_retro.handle)
     {
         FreeLibrary(g_retro.handle);
         g_retro.handle = NULL;
+        g_retro = { 0 };
     }
 }
 
@@ -302,6 +307,8 @@ void CLibretro::kill()
                 free((void*)info.data);
             _audio.destroy();
             video_deinit();
+            input *input_device = input::GetInstance();
+            input_device->bl->clear();
 
         }
 }

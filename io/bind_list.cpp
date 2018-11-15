@@ -234,7 +234,6 @@ public:
 		lock();
 			clear();
 			reset();
-
 			do
 			{
 				unsigned n;
