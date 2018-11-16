@@ -65,8 +65,7 @@ public:
     } g_retro;
 
     bool gamespec;
-    TCHAR exe_dir[MAX_PATH];
-    TCHAR save_name[MAX_PATH];
+    TCHAR savesys_name[MAX_PATH];
     TCHAR core_config[MAX_PATH];
     TCHAR input_config[MAX_PATH];
     Audio  _audio;

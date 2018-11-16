@@ -313,10 +313,10 @@ bool core_environment(unsigned cmd, void *data) {
     case RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY: // 9
     case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY: // 31
     {
-        char *sys_path = NULL;
+        static char *sys_path = NULL;
         if (!sys_path)
         {
-            string ansi = utf8_from_utf16(retro->exe_dir);
+            string ansi = utf8_from_utf16(retro->savesys_name);
             sys_path = strdup(ansi.c_str());
         }
         char **ppDir = (char**)data;

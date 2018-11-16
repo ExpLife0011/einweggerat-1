@@ -24,8 +24,6 @@
 #include <string.h>
 #include "glad.h"
 
-GLAPI void* get_proc(const char *namez);
-
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 static HMODULE libGL;
@@ -139,7 +137,6 @@ int gladLoadGL(void) {
 
     if(open_gl()) {
         status = gladLoadGLLoader(&get_proc);
-        close_gl();
     }
 
     return status;

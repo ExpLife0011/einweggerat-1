@@ -100,10 +100,8 @@ void CLibretro::core_unload() {
 
 bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_filename) {
     TCHAR game_filename_[MAX_PATH] = { 0 };
-
     ZeroMemory(core_config, sizeof(TCHAR)*MAX_PATH);
-    ZeroMemory(exe_dir, sizeof(TCHAR)*MAX_PATH);
-    ZeroMemory(save_name, sizeof(TCHAR)*MAX_PATH);
+    ZeroMemory(savesys_name, sizeof(TCHAR)*MAX_PATH);
     ZeroMemory(input_config, sizeof(TCHAR)*MAX_PATH);
 
     g_retro.handle = LoadLibrary(sofile);
@@ -137,9 +135,8 @@ bool CLibretro::core_load(TCHAR *sofile, bool gamespecificoptions, TCHAR* game_f
     TCHAR einweg_dir[MAX_PATH] = { 0 };
     GetCurrentDirectory(MAX_PATH, einweg_dir);
     PathAppend(einweg_dir, L"system");
-    lstrcpy(save_name, einweg_dir);
-    PathAppend(save_name, game_filename_);
-    lstrcat(save_name, L".sav");
+    lstrcpy(savesys_name, einweg_dir);
+    PathAppend(savesys_name, game_filename_);
 
   
    

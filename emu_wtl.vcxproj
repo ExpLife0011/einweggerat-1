@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <OutputFile>out_x64\einweggerat.exe</OutputFile>
+      <OutputFile>$(ProjectDir)out_x64\einweggerat.exe</OutputFile>
       <AdditionalDependencies>winmm.lib;shlwapi.lib;dinput8.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>out_x64/einweggerat.map</MapFileName>
