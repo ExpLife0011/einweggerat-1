@@ -17,11 +17,7 @@ typedef struct {
   int last_h;
   int last_w;
 
-  
-  GLuint blit_tex;
-  GLuint blit_fbo;
   bool software_rast;
-  uint8_t* buffer;
   GLuint pitch;
   bool sw_core;
   GLint tex_w, tex_h;

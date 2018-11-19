@@ -53,9 +53,6 @@ static const char *g_fshader_src =
 "gl_FragColor = texture2D(u_tex, o_coord);\n"
 "}";
 
-
-
-
 void ortho2d(float m[4][4], float left, float right, float bottom, float top) {
     m[0][0] = 1; m[0][1] = 0; m[0][2] = 0; m[0][3] = 0;
     m[1][0] = 0; m[1][1] = 1; m[1][2] = 0; m[1][3] = 0;
@@ -313,8 +310,6 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
 
     g_video.pitch = geom->base_width * g_video.bpp;
 
-    g_video.buffer = (uint8_t*)malloc(geom->max_width*geom->max_height*g_video.bpp);
-
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -362,17 +357,6 @@ bool video_set_pixel_format(unsigned format) {
     }
 
     return true;
-}
-
-unsigned video_pixel_get_alignment(unsigned pitch)
-{
-    if (pitch & 1)
-        return 1;
-    if (pitch & 2)
-        return 2;
-    if (pitch & 4)
-        return 4;
-    return 8;
 }
 
 void video_refresh(const void *data, unsigned width, unsigned height, unsigned pitch) {
@@ -433,7 +417,6 @@ void video_deinit() {
         glDeleteRenderbuffers(1, &g_video.rbo_id);
         g_video.rbo_id = 0;
     }
-    free(g_video.buffer);
     glDisableVertexAttribArray(1);
     glDeleteBuffers(1, &g_shader.vbo);
     glDeleteVertexArrays(1, &g_shader.vbo);
