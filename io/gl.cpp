@@ -391,15 +391,10 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
     if (data && data != RETRO_HW_FRAME_BUFFER_VALID) {
-        const GLvoid *data_buf = data;
-        unsigned line_bytes = width * g_video.bpp;
-        uint8_t *dst = (uint8_t*)g_video.buffer;
-        const uint8_t *src = (const uint8_t*)data;
-        for (int h = 0; h < height; h++, src += pitch, dst += line_bytes)
-        memcpy(dst, src, line_bytes);
-        data_buf = g_video.buffer;
+        g_video.pitch = pitch;
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, g_video.pitch / g_video.bpp);
         glTexSubImage2D(GL_TEXTURE_2D,
-            0, 0, 0, width, height, g_video.pixtype, g_video.pixfmt, data_buf);
+            0, 0, 0, width, height, g_video.pixtype, g_video.pixfmt, data);
     }
 
     glClear(GL_COLOR_BUFFER_BIT);
