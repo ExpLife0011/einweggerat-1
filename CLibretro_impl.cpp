@@ -271,9 +271,6 @@ static size_t core_audio_sample_batch(const int16_t *data, size_t frames)
     return 0;
 }
 
-
-
-
 static void core_log(enum retro_log_level level, const char *fmt, ...) {
     char buffer[4096] = { 0 };
     char buffer2[4096] = { 0 };

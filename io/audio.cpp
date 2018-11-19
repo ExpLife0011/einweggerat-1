@@ -1,8 +1,6 @@
 #define MAL_IMPLEMENTATION
 #include <windows.h>
 #include "audio.h"
-#include <initguid.h>
-#include <Mmdeviceapi.h>
 using namespace std;
 
 #define FRAME_COUNT (1024)
