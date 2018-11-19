@@ -289,6 +289,8 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
 
     resize_to_aspect(geom->aspect_ratio, geom->base_width * 1, geom->base_height * 1, &nwidth, &nheight);
 
+    g_video.software_rast = g_video.hw.context_reset;
+
     nwidth *= 1;
     nheight *= 1;
 
@@ -311,13 +313,16 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
 
     g_video.pitch = geom->base_width * g_video.bpp;
 
+    g_video.buffer = (uint8_t*)malloc(geom->max_width*geom->max_height*g_video.bpp);
+
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, geom->max_width, geom->max_height, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, geom->max_width, geom->max_height, 0,
         g_video.pixtype, g_video.pixfmt, NULL);
+
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -359,6 +364,16 @@ bool video_set_pixel_format(unsigned format) {
     return true;
 }
 
+unsigned video_pixel_get_alignment(unsigned pitch)
+{
+    if (pitch & 1)
+        return 1;
+    if (pitch & 2)
+        return 2;
+    if (pitch & 4)
+        return 4;
+    return 8;
+}
 
 void video_refresh(const void *data, unsigned width, unsigned height, unsigned pitch) {
     if (data == NULL) return;
@@ -375,14 +390,16 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
     resize_cb(width, height);
     glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
 
-    if (pitch != g_video.pitch) {
-        g_video.pitch = pitch;
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, g_video.pitch / g_video.bpp);
-    }
-
     if (data && data != RETRO_HW_FRAME_BUFFER_VALID) {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
-            g_video.pixtype, g_video.pixfmt, data);
+        const GLvoid *data_buf = data;
+        unsigned line_bytes = width * g_video.bpp;
+        uint8_t *dst = (uint8_t*)g_video.buffer;
+        const uint8_t *src = (const uint8_t*)data;
+        for (int h = 0; h < height; h++, src += pitch, dst += line_bytes)
+        memcpy(dst, src, line_bytes);
+        data_buf = g_video.buffer;
+        glTexSubImage2D(GL_TEXTURE_2D,
+            0, 0, 0, width, height, g_video.pixtype, g_video.pixfmt, data_buf);
     }
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -421,7 +438,7 @@ void video_deinit() {
         glDeleteRenderbuffers(1, &g_video.rbo_id);
         g_video.rbo_id = 0;
     }
-
+    free(g_video.buffer);
     glDisableVertexAttribArray(1);
     glDeleteBuffers(1, &g_shader.vbo);
     glDeleteVertexArrays(1, &g_shader.vbo);
