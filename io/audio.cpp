@@ -139,32 +139,27 @@ void Audio::mix(const int16_t* samples, size_t size)
     int out_len = src_data.output_frames * 2 * sizeof(float);
     while (written < out_len)
     {
-        slock_lock(lockz);
         size_t avail = fifo_write_avail(_fifo);
         if (avail)
         {
             size_t write_amt = out_len - written > avail ? avail : out_len - written;
             fifo_write(_fifo, (const char*)output_float + written, write_amt);
             written += write_amt;
-            slock_unlock(lockz);
         }
         else
         {
             scond_wait(condz, lockz);
-            slock_unlock(lockz);
             continue;
         }
     }
 }
 
 mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
-    slock_lock(lockz);
     size_t amount = fifo_read_avail(_fifo);
     amount = count > amount ? amount : count;
     fifo_read(_fifo, out, amount);
     memset(out + amount, 0, count - amount);
     scond_signal(condz);
-    slock_unlock(lockz);
     return count;
 }
 

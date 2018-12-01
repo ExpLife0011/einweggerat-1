@@ -188,7 +188,7 @@ void resize_cb(int width, int height) {
         g_video.last_w = w;
         g_video.last_h = h;
     }
-   
+
     double aspect = (double)width / (double)height;
     unsigned width_calc = width;
     unsigned height_calc = height;
@@ -196,8 +196,8 @@ void resize_cb(int width, int height) {
         width_calc = height_calc * aspect;
     else if (width_calc / height_calc < aspect)
         height_calc = width_calc / aspect;
-    unsigned x = (unsigned)g_video.last_w / width_calc;
-    unsigned y = (unsigned)g_video.last_h / height_calc;
+    unsigned x = (unsigned)width / width_calc;
+    unsigned y = (unsigned)height / height_calc;
     unsigned factor = x < y ? x : y;
     RECT view;
     view.right = (unsigned)(width_calc* factor);
