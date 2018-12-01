@@ -315,7 +315,7 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, geom->max_width, geom->max_height, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, geom->max_width, geom->max_height, 0,
         g_video.pixtype, g_video.pixfmt, NULL);
 
 
