@@ -189,7 +189,7 @@ void resize_cb(int width, int height) {
         g_video.last_h = h;
     }
 
-    double aspect = (double)width/height;
+    double aspect = (double)g_video.aspect;
     unsigned width_calc = width;
     unsigned height_calc = height;
     if (width / height_calc > aspect)
