@@ -39,9 +39,6 @@
     <ClCompile Include="3rdparty\resampler.c">
       <Filter>3rdparty</Filter>
     </ClCompile>
-    <ClCompile Include="3rdparty\rthreads.c">
-      <Filter>3rdparty</Filter>
-    </ClCompile>
     <ClCompile Include="io\Data_Reader.cpp">
       <Filter>3rdparty\blargg</Filter>
     </ClCompile>
@@ -121,9 +118,6 @@
       <Filter>3rdparty</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\resampler.h">
-      <Filter>3rdparty</Filter>
-    </ClInclude>
-    <ClInclude Include="3rdparty\rthreads.h">
       <Filter>3rdparty</Filter>
     </ClInclude>
     <ClInclude Include="io\Data_Reader.h">

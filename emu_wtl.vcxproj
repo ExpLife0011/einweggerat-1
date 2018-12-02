@@ -210,7 +210,6 @@
     <ClInclude Include="3rdparty\libretro.h" />
     <ClInclude Include="3rdparty\mini_al.h" />
     <ClInclude Include="3rdparty\resampler.h" />
-    <ClInclude Include="3rdparty\rthreads.h" />
     <ClInclude Include="CLibretro.h" />
     <ClInclude Include="gui\DropFileTarget.h" />
     <ClInclude Include="gui\emu_wtl.h" />
@@ -238,7 +237,6 @@
   <ItemGroup>
     <ClCompile Include="3rdparty\glad.c" />
     <ClCompile Include="3rdparty\resampler.c" />
-    <ClCompile Include="3rdparty\rthreads.c" />
     <ClCompile Include="CLibretro.cpp" />
     <ClCompile Include="CLibretro_impl.cpp" />
     <ClCompile Include="gui\emu_wtl.cpp">

@@ -73,9 +73,7 @@ extern "C" {
        void* resample;
        float *input_float;
        float *output_float;
-       slock_t *lockz;
-       scond_t *condz;
-
+       HANDLE sem;
       bool init(double refreshra, retro_system_av_info av);
       void destroy();
       void reset();
