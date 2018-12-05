@@ -178,6 +178,8 @@ void init_framebuffer(int width, int height)
 
 void resize_cb(int width, int height) {
     RECT clientRect;
+    if (!width) return;
+    if (!height)return;
     GetClientRect(g_video.hwnd, &clientRect);
     int32_t w = clientRect.right - clientRect.left;
     int32_t h = clientRect.bottom - clientRect.top;
@@ -196,17 +198,17 @@ void resize_cb(int width, int height) {
         width_calc = height_calc * aspect;
     else if (width_calc / height_calc < aspect)
         height_calc = width_calc / aspect;
-    unsigned x = (unsigned)g_video.last_w / width_calc;
-    unsigned y = (unsigned)g_video.last_h/ height_calc;
+    unsigned x = (unsigned)w / width_calc;
+    unsigned y = (unsigned)h/ height_calc;
     unsigned factor = x < y ? x : y;
     RECT view;
     view.right = (unsigned)(width_calc* factor);
     view.bottom = (unsigned)(height_calc * factor);
-    view.left = (g_video.last_w - view.right) / 2;
-    view.top = (g_video.last_h - view.bottom) / 2;
+    view.left = (w - view.right) / 2;
+    view.top = (h - view.bottom) / 2;
     view.right += view.left;
     view.bottom += view.top;
-    glViewport(view.left, g_video.last_h - view.bottom, view.right - view.left, view.bottom - view.top);
+    glViewport(view.left, h - view.bottom, view.right - view.left, view.bottom - view.top);
 }
 
 void create_window(int width, int height, HWND hwnd) {

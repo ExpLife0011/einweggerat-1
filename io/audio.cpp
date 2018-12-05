@@ -100,7 +100,7 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     input_float = new float[FRAME_COUNT * 4];
     if (mal_device_start(&device) != MAL_SUCCESS)return false;
     frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / (av.timing.fps));
-    sem = CreateSemaphore(NULL, 0, 1000, NULL);
+    sem = CreateEvent(NULL,TRUE,FALSE,TEXT("einwegaudiosync"));
     return true;
 }
 void Audio::destroy()
@@ -146,7 +146,11 @@ void Audio::mix(const int16_t* samples, size_t size)
         }
         else
         {
-            WaitForSingleObject(sem, INFINITE);
+            HRESULT result = WaitForSingleObject(sem, INFINITE);
+            if (result == WAIT_OBJECT_0)
+            {
+                ResetEvent(sem);
+            }
             continue;
         }
     }
@@ -157,7 +161,7 @@ mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
     amount = count > amount ? amount : count;
     fifo_read(_fifo, out, amount);
     memset(out + amount, 0, count - amount);
-    ReleaseSemaphore(sem, 1, NULL);
+    SetEvent(sem);
     return count;
 }
 

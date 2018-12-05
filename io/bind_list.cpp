@@ -141,8 +141,8 @@ public:
 		lock();
 			assert( index < get_count() );
 
-			const bind & b = list[ index ];
-
+			bind & b = list[ index ];
+            b.value = 0;
 			e = b.e;
 			action = b.action;
 			retro_id = b.retro_id;
@@ -207,6 +207,7 @@ public:
 			bind b;
 			if (i == index)
 			{
+                b.value = 0;
 				b.e = e;
 				b.action = action;
 				b.retro_id = retro_id;
@@ -214,6 +215,7 @@ public:
 			}
 			else
 			{
+                b.value = 0;
 				b.e = list2.at(i).e;
 				b.action = list2.at(i).action;
 				b.retro_id = list2.at(i).retro_id;

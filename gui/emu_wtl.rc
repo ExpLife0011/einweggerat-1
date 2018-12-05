@@ -56,8 +56,8 @@ BEGIN
     BEGIN
         MENUITEM "&Open ROM/ISO....",           ID_FILE_OPENROM
         MENUITEM SEPARATOR
-        MENUITEM "&Save Savestate",             ID_FILE_SAVE40057
-        MENUITEM "&Load Savestate",             ID_FILE_LOADSAVESTATE
+        MENUITEM "&Save Savestate",             ID_SAVESTATE
+        MENUITEM "&Load Savestate",             ID_LOADSAVESTATE
     END
     MENUITEM "&Options",                    ID_OPTIONS
     MENUITEM "&About",                      ID_ABOUT
