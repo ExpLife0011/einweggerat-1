@@ -254,7 +254,7 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
     g_retro.retro_get_system_av_info(&av);
     // g_retro.retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
 
-    ::video_configure(&av.geometry, emulator_hwnd);
+    ::video_init(&av.geometry, emulator_hwnd);
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &lpDevMode) == 0) {
         refreshr = 60.0; // default value if cannot retrieve from user settings.
     }
@@ -271,9 +271,13 @@ bool CLibretro::loadfile(TCHAR* filename, TCHAR* core_filename, bool gamespecifi
 
 void CLibretro::run()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (!g_video.software_rast)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+   
 
     g_retro.retro_run();
 

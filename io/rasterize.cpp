@@ -1,9 +1,35 @@
 #include <windows.h>
+#include <d3d9.h>
 #include "../3rdparty/libretro.h"
 #include "glad.h"
 #include "gl_render.h"
 #include <math.h>
 video g_video;
+
+#pragma comment(lib,"d3d9.lib")
+
+#define VertexFVF (D3DFVF_XYZ|D3DFVF_TEX1)
+typedef struct
+{
+    FLOAT x, y, z;
+    FLOAT u, v;
+} VERTEX;
+static VERTEX d3dvtx[4] =
+{
+    {-1.0f, 1.0f,1.0f, 0 ,0},
+    { 1.0f, 1.0f,1.0f, 0 ,0},
+    { 1.0f,-1.0f,1.0f, 0 ,0},
+    {-1.0f,-1.0f,1.0f, 0 ,0},
+};
+
+int pow2up(int d)
+{
+    int c = 2048;
+    while (d <= c)
+        c /= 2;
+    return c * 2;
+}
+
 
 static const PIXELFORMATDESCRIPTOR pfd =
 {
@@ -29,7 +55,7 @@ static struct {
     GLint i_coord;
     GLint u_tex;
     GLint u_mvp;
-} g_shader = { 0 };
+} g_glshader = { 0 };
 
 static float g_scale = 2;
 static bool g_win = false;
@@ -65,7 +91,7 @@ void ortho2d(float m[4][4], float left, float right, float bottom, float top) {
     m[3][0] = -(right + left) / (right - left);
     m[3][1] = -(top + bottom) / (top - bottom);
 }
-GLuint compile_shader(unsigned type, unsigned count, const char **strings) {
+GLuint compile_glshader(unsigned type, unsigned count, const char **strings) {
     GLint status;
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, count, strings, NULL);
@@ -79,10 +105,10 @@ GLuint compile_shader(unsigned type, unsigned count, const char **strings) {
 }
 
 
-void init_shaders() {
+void init_glshaders() {
     GLint status;
-    GLuint vshader = compile_shader(GL_VERTEX_SHADER, 1, &g_vshader_src);
-    GLuint fshader = compile_shader(GL_FRAGMENT_SHADER, 1, &g_fshader_src);
+    GLuint vshader = compile_glshader(GL_VERTEX_SHADER, 1, &g_vshader_src);
+    GLuint fshader = compile_glshader(GL_FRAGMENT_SHADER, 1, &g_fshader_src);
     GLuint program = glCreateProgram();
 
     glAttachShader(program, vshader);
@@ -98,16 +124,16 @@ void init_shaders() {
         glGetProgramInfoLog(program, sizeof(buffer), NULL, buffer);
     }
 
-    g_shader.program = program;
-    g_shader.i_pos = glGetAttribLocation(program, "i_pos");
-    g_shader.i_coord = glGetAttribLocation(program, "i_coord");
-    g_shader.u_tex = glGetUniformLocation(program, "u_tex");
-    g_shader.u_mvp = glGetUniformLocation(program, "u_mvp");
+    g_glshader.program = program;
+    g_glshader.i_pos = glGetAttribLocation(program, "i_pos");
+    g_glshader.i_coord = glGetAttribLocation(program, "i_coord");
+    g_glshader.u_tex = glGetUniformLocation(program, "u_tex");
+    g_glshader.u_mvp = glGetUniformLocation(program, "u_mvp");
 
-    glGenVertexArrays(1, &g_shader.vao);
-    glGenBuffers(1, &g_shader.vbo);
-    glUseProgram(g_shader.program);
-    glUniform1i(g_shader.u_tex, 0);
+    glGenVertexArrays(1, &g_glshader.vao);
+    glGenBuffers(1, &g_glshader.vbo);
+    glUseProgram(g_glshader.program);
+    glUniform1i(g_glshader.u_tex, 0);
 
     float m[4][4];
     if (g_video.hw.bottom_left_origin)
@@ -115,12 +141,12 @@ void init_shaders() {
     else
         ortho2d(m, -1, 1, -1, 1);
 
-    glUniformMatrix4fv(g_shader.u_mvp, 1, GL_FALSE, (float*)m);
+    glUniformMatrix4fv(g_glshader.u_mvp, 1, GL_FALSE, (float*)m);
     glUseProgram(0);
 }
 
 
-void refresh_vertex_data() {
+void refresh_glvbo_data() {
 
     float bottom = (float)g_video.base_h / g_video.tex_h;
     float right = (float)g_video.base_w / g_video.tex_w;
@@ -142,18 +168,18 @@ void refresh_vertex_data() {
         1.0f,  1.0f,0., right,  0.0f,  // right-top
     };
 
-    glBindVertexArray(g_shader.vao);
-    glBindBuffer(GL_ARRAY_BUFFER, g_shader.vbo);
+    glBindVertexArray(g_glshader.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, g_glshader.vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data) * 4, vert, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(g_shader.i_pos);
-    glEnableVertexAttribArray(g_shader.i_coord);
-    glVertexAttribPointer(g_shader.i_pos, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_data), (void*)offsetof(vertex_data, x));
-    glVertexAttribPointer(g_shader.i_coord, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_data), (void*)offsetof(vertex_data, s));
+    glEnableVertexAttribArray(g_glshader.i_pos);
+    glEnableVertexAttribArray(g_glshader.i_coord);
+    glVertexAttribPointer(g_glshader.i_pos, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_data), (void*)offsetof(vertex_data, x));
+    glVertexAttribPointer(g_glshader.i_coord, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_data), (void*)offsetof(vertex_data, s));
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void init_framebuffer(int width, int height)
+void init_glframebuffer(int width, int height)
 {
     if (g_video.fbo_id)
         glDeleteFramebuffers(1, &g_video.fbo_id);
@@ -176,19 +202,17 @@ void init_framebuffer(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void resize_cb(int width, int height) {
+RECT resize_glcb(int width, int height) {
     RECT clientRect;
-    if (!width) return;
-    if (!height)return;
     GetClientRect(g_video.hwnd, &clientRect);
-    int32_t w = clientRect.right - clientRect.left;
-    int32_t h = clientRect.bottom - clientRect.top;
+    int32_t rectw = clientRect.right - clientRect.left;
+    int32_t recth = clientRect.bottom - clientRect.top;
     // figure out the largest area that fits in this resolution at the desired aspect ratio
-    if (g_video.last_w != w && w ||
-        g_video.last_h != h && h)
+    if (g_video.last_w != rectw && rectw ||
+        g_video.last_h != recth && recth)
     {
-        g_video.last_w = w;
-        g_video.last_h = h;
+        g_video.last_w = rectw;
+        g_video.last_h = recth;
     }
 
     double aspect = (double)g_video.aspect;
@@ -198,20 +222,20 @@ void resize_cb(int width, int height) {
         width_calc = height_calc * aspect;
     else if (width_calc / height_calc < aspect)
         height_calc = width_calc / aspect;
-    unsigned x = (unsigned)w / width_calc;
-    unsigned y = (unsigned)h/ height_calc;
+    unsigned x = (unsigned)rectw / width_calc;
+    unsigned y = (unsigned)recth/ height_calc;
     unsigned factor = x < y ? x : y;
     RECT view;
     view.right = (unsigned)(width_calc* factor);
     view.bottom = (unsigned)(height_calc * factor);
-    view.left = (w - view.right) / 2;
-    view.top = (h - view.bottom) / 2;
+    view.left = (rectw - view.right) / 2;
+    view.top = (recth - view.bottom) / 2;
     view.right += view.left;
     view.bottom += view.top;
-    glViewport(view.left, h - view.bottom, view.right - view.left, view.bottom - view.top);
+    return view;
 }
 
-void create_window(int width, int height, HWND hwnd) {
+void create_glwindow(int width, int height, HWND hwnd) {
 
     g_video.hwnd = hwnd;
     g_video.hDC = GetDC(hwnd);
@@ -222,7 +246,7 @@ void create_window(int width, int height, HWND hwnd) {
     if (!wglMakeCurrent(g_video.hDC, g_video.hRC))return;
 
     gladLoadGL();
-    init_shaders();
+    init_glshaders();
 
     typedef bool (APIENTRY *PFNWGLSWAPINTERVALFARPROC)(int);
     PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT = 0;
@@ -281,19 +305,16 @@ BOOL CenterWindow(HWND hwndWindow)
     return FALSE;
 }
 
-
-
-void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
+void video_glinit(const struct retro_game_geometry *geom, HWND hwnd)
+{
     int nwidth = 0, nheight = 0;
 
     resize_to_aspect(geom->aspect_ratio, geom->base_width * 1, geom->base_height * 1, &nwidth, &nheight);
 
-    g_video.software_rast = g_video.hw.context_reset;
-
     nwidth *= 1;
     nheight *= 1;
 
-    create_window(nwidth, nheight, hwnd);
+    create_glwindow(nwidth, nheight, hwnd);
 
     if (g_video.tex_id)
         glDeleteTextures(1, &g_video.tex_id);
@@ -323,7 +344,7 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    init_framebuffer(geom->base_width, geom->base_height);
+    init_glframebuffer(geom->base_width, geom->base_height);
 
 
     g_video.tex_w = geom->max_width;
@@ -332,26 +353,76 @@ void video_configure(const struct retro_game_geometry *geom, HWND hwnd) {
     g_video.base_h = geom->base_height;
     g_video.aspect = geom->aspect_ratio;
 
-    refresh_vertex_data();
+    refresh_glvbo_data();
     if (g_video.hw.context_reset)g_video.hw.context_reset();
+}
+
+int created3dtexture(int width, int height)
+{
+    HRESULT hr;
+    if (g_video.tex) g_video.tex->Release();
+    hr = g_video.d3ddev->CreateTexture(g_video.tex_w, g_video.tex_h, 1, D3DUSAGE_DYNAMIC, (D3DFORMAT)g_video.pixfmt, D3DPOOL_DEFAULT, &g_video.tex, NULL);
+    if (hr != D3D_OK) return -1;
+    hr = g_video.d3ddev->SetTexture(0, g_video.tex);
+    d3dvtx[1].u = g_video.base_w / (float)g_video.tex_w;
+    d3dvtx[2].u = g_video.base_w / (float)g_video.tex_w;
+    d3dvtx[2].v = g_video.base_h / (float)g_video.tex_h;
+    d3dvtx[3].v = g_video.base_h / (float)g_video.tex_h;
+    return 0;
+}
+
+
+void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
+
+    g_video.software_rast = !g_video.hw.context_reset;
+    if (g_video.software_rast)
+    {
+
+        g_video.tex_w = pow2up(geom->max_width);
+        g_video.tex_h = geom->max_height;
+        g_video.base_w = geom->base_width;
+        g_video.base_h = geom->base_height;
+        g_video.aspect = geom->aspect_ratio;
+        g_video.hwnd = hwnd;
+        g_video.d3d = NULL;
+        g_video.d3ddev = NULL;
+        g_video.tex = NULL;
+        HRESULT hr;
+        memset(&g_video.d3dpp, 0, sizeof(g_video.d3dpp));
+        g_video.d3dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+        g_video.d3dpp.BackBufferWidth = 0;
+        g_video.d3dpp.BackBufferHeight = 0;
+        g_video.d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+        g_video.d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+        g_video.d3dpp.Windowed = true;
+        g_video.d3dpp.hDeviceWindow = hwnd;
+        g_video.d3d = Direct3DCreate9(D3D9b_SDK_VERSION);
+        if (g_video.d3d == NULL) return;
+        hr = g_video.d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_video.d3dpp, &g_video.d3ddev);
+        if (hr != D3D_OK) return;
+        hr = g_video.d3ddev->SetFVF(VertexFVF);
+        hr = g_video.d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);
+        hr = g_video.d3ddev->SetVertexShader(NULL);
+        created3dtexture(g_video.tex_w, g_video.tex_h);
+
+    }
+    else
+        video_glinit(geom, hwnd);
 }
 
 
 bool video_set_pixel_format(unsigned format) {
     switch (format) {
     case RETRO_PIXEL_FORMAT_0RGB1555:
-        g_video.pixfmt = GL_UNSIGNED_SHORT_5_5_5_1;
-        g_video.pixtype = GL_BGRA;
+        g_video.pixfmt = D3DFMT_A1R5G5B5;
         g_video.bpp = sizeof(uint16_t);
         break;
     case RETRO_PIXEL_FORMAT_XRGB8888:
-        g_video.pixfmt = GL_UNSIGNED_INT_8_8_8_8_REV;
-        g_video.pixtype = GL_BGRA;
+        g_video.pixfmt = D3DFMT_X8R8G8B8;
         g_video.bpp = sizeof(uint32_t);
         break;
     case RETRO_PIXEL_FORMAT_RGB565:
-        g_video.pixfmt = GL_UNSIGNED_SHORT_5_6_5;
-        g_video.pixtype = GL_RGB;
+        g_video.pixfmt = D3DFMT_R5G6B5;
         g_video.bpp = sizeof(uint16_t);
         break;
     default:
@@ -363,44 +434,65 @@ bool video_set_pixel_format(unsigned format) {
 
 void video_refresh(const void *data, unsigned width, unsigned height, unsigned pitch) {
     if (data == NULL) return;
-    if (g_video.base_w != width || g_video.base_h != height)
+    if (g_video.software_rast)
     {
-        g_video.base_h = height;
-        g_video.base_w = width;
-
-        refresh_vertex_data();
-
+        HRESULT hr;
+        if (g_video.base_w != width || g_video.base_h != height)
+        {
+            d3dvtx[1].u = g_video.base_w / (float)g_video.tex_w;
+            d3dvtx[2].u = g_video.base_w / (float)g_video.tex_w;
+            d3dvtx[2].v = g_video.base_h / (float)g_video.tex_h;
+            d3dvtx[3].v = g_video.base_h / (float)g_video.tex_h;
+        }
+       
+        D3DLOCKED_RECT lock;
+        g_video.tex->LockRect(0, &lock, NULL, D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE);
+        if ((unsigned int)lock.Pitch == pitch) memcpy(lock.pBits, data, pitch*(height - 1) + (width * g_video.bpp));
+        else
+        {
+            for (unsigned int i = 0; i < height; i++)
+            {
+                memcpy((uint8_t*)lock.pBits + i * lock.Pitch, (uint8_t*)data + i * pitch, width * g_video.bpp);
+            }
+        }
+        g_video.tex->UnlockRect(0);
+        g_video.d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+        hr = g_video.d3ddev->BeginScene();
+        hr = g_video.d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, d3dvtx, sizeof(VERTEX));
+        hr = g_video.d3ddev->EndScene();
+        hr = g_video.d3ddev->Present(NULL, NULL, NULL, NULL);
     }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    resize_cb(width, height);
-    glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
-
-    if (data && data != RETRO_HW_FRAME_BUFFER_VALID) {
-        g_video.pitch = pitch;
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, g_video.pitch / g_video.bpp);
-        glTexSubImage2D(GL_TEXTURE_2D,
-            0, 0, 0, width, height, g_video.pixtype, g_video.pixfmt, data);
+    else
+    {
+        if (g_video.base_w != width || g_video.base_h != height)
+        {
+            g_video.base_h = height;
+            g_video.base_w = width;
+            refresh_glvbo_data();
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        RECT view = resize_glcb(width, height);
+        RECT clientRect;
+        GetClientRect(g_video.hwnd, &clientRect);
+        int32_t w = clientRect.right - clientRect.left;
+        int32_t h = clientRect.bottom - clientRect.top;
+        glViewport(view.left, h - view.bottom, view.right - view.left, view.bottom - view.top);
+        glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(g_glshader.program);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
+        glBindVertexArray(g_glshader.vao);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
+        glUseProgram(0);
+        SwapBuffers(g_video.hDC);
     }
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(g_shader.program);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, g_video.tex_id);
-
-
-    glBindVertexArray(g_shader.vao);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-
-    glUseProgram(0);
-
-    SwapBuffers(g_video.hDC);
+   
 }
 
-void video_deinit() {
+void video_gldeinit()
+{
     if (g_video.tex_id)
     {
         glDeleteTextures(1, &g_video.tex_id);
@@ -420,8 +512,8 @@ void video_deinit() {
         g_video.rbo_id = 0;
     }
     glDisableVertexAttribArray(1);
-    glDeleteBuffers(1, &g_shader.vbo);
-    glDeleteVertexArrays(1, &g_shader.vbo);
+    glDeleteBuffers(1, &g_glshader.vbo);
+    glDeleteVertexArrays(1, &g_glshader.vbo);
 
     if (g_video.hRC)
     {
@@ -431,5 +523,28 @@ void video_deinit() {
 
     if (g_video.hDC) ReleaseDC(g_video.hwnd, g_video.hDC);
     close_gl();
+}
+
+void video_deinit() {
+    if (!g_video.software_rast)
+        video_gldeinit();
+    else
+    {
+        if (g_video.tex) {
+            g_video.tex->Release();
+            g_video.tex = 0;
+        }
+
+        if (g_video.d3ddev) {
+            g_video.d3ddev->Release();
+            g_video.d3ddev = 0;
+        }
+
+        if (g_video.d3d) {
+            g_video.d3d->Release();
+            g_video.d3d = 0;
+        }
+
+    }
 
 }

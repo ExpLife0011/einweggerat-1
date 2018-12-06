@@ -18,9 +18,6 @@
     <ClCompile Include="io\dinput.cpp">
       <Filter>io</Filter>
     </ClCompile>
-    <ClCompile Include="io\gl.cpp">
-      <Filter>io</Filter>
-    </ClCompile>
     <ClCompile Include="io\input.cpp">
       <Filter>io</Filter>
     </ClCompile>
@@ -43,6 +40,9 @@
       <Filter>3rdparty\blargg</Filter>
     </ClCompile>
     <ClCompile Include="CLibretro_impl.cpp" />
+    <ClCompile Include="io\rasterize.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CLibretro.h" />

@@ -2,7 +2,6 @@
 #define _dinput_h_
 
 #include <vector>
-
 #include <tchar.h>
 
 class guid_container;

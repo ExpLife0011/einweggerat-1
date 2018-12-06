@@ -2,9 +2,6 @@
 #define CEMULATOR_H
 #include <initguid.h>
 #include <list>
-#include <thread>
-#include <chrono>
-#include <mutex>
 #include "io/input.h"
 #include "io/audio.h"
 #define MUDLIB_IMPLEMENTATION

@@ -53,11 +53,7 @@ void fifo_read(fifo_buffer_t *buffer, void *in_buf, size_t size)
 
 static mal_uint32 audio_callback(mal_device* pDevice, mal_uint32 frameCount, void* pSamples)
 {
-    //convert from samples to the actual number of bytes.
-    int count_bytes = frameCount * pDevice->channels * mal_get_bytes_per_sample(mal_format_f32);
-    int ret = ((Audio*)pDevice->pUserData)->fill_buffer((uint8_t*)pSamples, count_bytes) / mal_get_bytes_per_sample(mal_format_f32);
-    return ret / pDevice->channels;
-    //...and back to samples
+    return ((Audio*)pDevice->pUserData)->fill_buffer((uint8_t*)pSamples, frameCount);
 }
 
 static retro_time_t frame_limit_minimum_time = 0.0;
@@ -109,7 +105,6 @@ bool Audio::init(double refreshra, retro_system_av_info av)
 void Audio::destroy()
 {
     {
-       
         mal_device_stop(&device);
         mal_context_uninit(&context);
         fifo_free(_fifo);
@@ -166,12 +161,15 @@ void Audio::mix(const int16_t* samples, size_t size)
 }
 
 mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
+    count *= device.channels * mal_get_bytes_per_sample(mal_format_f32);
     EnterCriticalSection(&cs);
     size_t amount = fifo_read_avail(_fifo);
-    amount = count > amount ? amount : count;
+    amount = (count >= amount) ? amount : count;
     fifo_read(_fifo, out, amount);
     SetEvent(sem);
     LeaveCriticalSection(&cs);
+    amount /= device.channels;
+    amount /= mal_get_bytes_per_sample(mal_format_f32);
     return amount;
 }
 
