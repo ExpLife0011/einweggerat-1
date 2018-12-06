@@ -74,6 +74,7 @@ extern "C" {
        float *input_float;
        float *output_float;
        HANDLE sem;
+       CRITICAL_SECTION cs;
       bool init(double refreshra, retro_system_av_info av);
       void destroy();
       void reset();

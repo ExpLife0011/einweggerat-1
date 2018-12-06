@@ -67,6 +67,9 @@ static retro_time_t frame_limit_last_time = 0.0;
 
 bool Audio::init(double refreshra, retro_system_av_info av)
 {
+    sem = CreateEvent(NULL, TRUE, FALSE, NULL);
+    InitializeCriticalSection(&cs);
+
     system_rate = av.timing.sample_rate;
     system_fps = av.timing.fps;
     if (fabs(1.0f - system_fps / refreshra) <= 0.05)
@@ -100,15 +103,17 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     input_float = new float[FRAME_COUNT * 4];
     if (mal_device_start(&device) != MAL_SUCCESS)return false;
     frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / (av.timing.fps));
-    sem = CreateEvent(NULL,TRUE,FALSE,TEXT("einwegaudiosync"));
+    
     return true;
 }
 void Audio::destroy()
 {
     {
+       
         mal_device_stop(&device);
         mal_context_uninit(&context);
         fifo_free(_fifo);
+        DeleteCriticalSection(&cs);
         CloseHandle(sem);
         delete[] input_float;
         delete[] output_float;
@@ -137,31 +142,36 @@ void Audio::mix(const int16_t* samples, size_t size)
     int out_len = src_data.output_frames * 2 * sizeof(float);
     while (written < out_len)
     {
+        EnterCriticalSection(&cs);
         size_t avail = fifo_write_avail(_fifo);
         if (avail)
         {
             size_t write_amt = out_len - written > avail ? avail : out_len - written;
             fifo_write(_fifo, (const char*)output_float + written, write_amt);
             written += write_amt;
+            LeaveCriticalSection(&cs);
         }
         else
         {
+            LeaveCriticalSection(&cs);
             HRESULT result = WaitForSingleObject(sem, INFINITE);
             if (result == WAIT_OBJECT_0)
             {
                 ResetEvent(sem);
             }
+          
             continue;
         }
     }
 }
 
 mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
+    EnterCriticalSection(&cs);
     size_t amount = fifo_read_avail(_fifo);
     amount = count > amount ? amount : count;
     fifo_read(_fifo, out, amount);
-    memset(out + amount, 0, count - amount);
     SetEvent(sem);
-    return count;
+    LeaveCriticalSection(&cs);
+    return amount;
 }
 
