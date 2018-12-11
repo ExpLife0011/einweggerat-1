@@ -47,7 +47,9 @@ int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	{
 		if (!AttachConsole(ATTACH_PARENT_PROCESS))
 		{
-
+            AllocConsole();
+            AttachConsole(GetCurrentProcessId());
+            Mud_MiscWindows::redirectiotoconsole();
             dlgMain.ShowWindow(nCmdShow);
             int nRet = theLoop.Run(dlgMain);
             _Module.RemoveMessageLoop();
