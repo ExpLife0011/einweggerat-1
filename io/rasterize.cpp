@@ -8,19 +8,15 @@ video g_video;
 
 #pragma comment(lib,"d3d9.lib")
 
-#define VertexFVF (D3DFVF_XYZ|D3DFVF_TEX1)
+#define VertexFVF (D3DFVF_XYZRHW|D3DFVF_TEX1)
 typedef struct
 {
     FLOAT x, y, z;
+    FLOAT rhw;
     FLOAT u, v;
 } VERTEX;
-static VERTEX d3dvtx[4] =
-{
-    {-1.0f, 1.0f,1.0f, 0 ,0},
-    { 1.0f, 1.0f,1.0f, 0 ,0},
-    { 1.0f,-1.0f,1.0f, 0 ,0},
-    {-1.0f,-1.0f,1.0f, 0 ,0},
-};
+VERTEX verts[4] = { 0 };
+
 
 int pow2up(int d)
 {
@@ -360,26 +356,66 @@ void video_glinit(const struct retro_game_geometry *geom, HWND hwnd)
 int created3dtexture(int width, int height)
 {
     HRESULT hr;
-    if (g_video.tex) g_video.tex->Release();
+    if (g_video.tex)
+    {
+        g_video.tex->Release();
+        g_video.tex = NULL;
+    }
     hr = g_video.d3ddev->CreateTexture(g_video.tex_w, g_video.tex_h, 1, D3DUSAGE_DYNAMIC, (D3DFORMAT)g_video.pixfmt, D3DPOOL_DEFAULT, &g_video.tex, NULL);
     if (hr != D3D_OK) return -1;
     hr = g_video.d3ddev->SetTexture(0, g_video.tex);
-    d3dvtx[1].u = g_video.base_w / (float)g_video.tex_w;
-    d3dvtx[2].u = g_video.base_w / (float)g_video.tex_w;
-    d3dvtx[2].v = g_video.base_h / (float)g_video.tex_h;
-    d3dvtx[3].v = g_video.base_h / (float)g_video.tex_h;
     return 0;
 }
 
+void resized3d(int width, int height)
+{
+    HRESULT hr;
+    if (IsIconic(g_video.hwnd))
+        return;
+    POINT ptOffset = { 0,0 };
+    ClientToScreen(g_video.hwnd, &ptOffset);
+    RECT r = { 0 };
+    GetClientRect(g_video.hwnd, &r);
+    OffsetRect(&r, ptOffset.x, ptOffset.y);
+    g_video.d3dpp.BackBufferWidth = r.right - r.left;
+    g_video.d3dpp.BackBufferHeight = r.bottom - r.top;
+    if (g_video.tex)
+    {
+        g_video.tex->Release();
+        g_video.tex = NULL;
+    }
+    if (g_video.d3ddev)g_video.d3ddev->Reset(&g_video.d3dpp);
+    created3dtexture(g_video.tex_w, g_video.tex_h);
+    hr = g_video.d3ddev->SetFVF(VertexFVF);
+    hr = g_video.d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);
+    hr = g_video.d3ddev->SetVertexShader(NULL);
+    double aspect = (double)g_video.aspect;
+    unsigned width_calc = width;
+    unsigned height_calc = height;
+    if (width / height_calc > aspect)
+        width_calc = height_calc * aspect;
+    else if (width_calc / height_calc < aspect)
+        height_calc = width_calc / aspect;
+    unsigned x = (unsigned)g_video.d3dpp.BackBufferWidth / width_calc;
+    unsigned y = (unsigned)g_video.d3dpp.BackBufferHeight / height_calc;
+    unsigned factor = x < y ? x : y;
+    RECT r2 = { 0, 0, width_calc*factor, height_calc*factor };
+    OffsetRect(&r2, (g_video.d3dpp.BackBufferWidth - r2.right) / 2, (g_video.d3dpp.BackBufferHeight - r2.bottom) / 2);
+    float texw = float(g_video.base_w) / float(g_video.tex_w);
+    float texh = float(g_video.base_h) / float(g_video.tex_h);
+    verts[0] = { (float)r2.left - 0.5f, (float)r2.bottom - 0.5f, 0.0f, 1.0f, 0.0f, texh };
+    verts[1] = { (float)r2.left - 0.5f, (float)r2.top - 0.5f, 0.0f, 1.0f, 0.0f, 0.0f };
+    verts[2] = { (float)r2.right - 0.5f, (float)r2.bottom - 0.5f, 0.0f, 1.0f, texw, texh };
+    verts[3] = { (float)r2.right - 0.5f, (float)r2.top - 0.5f, 0.0f, 1.0f, texw, 0.0f };
+}
 
 void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
 
     g_video.software_rast = !g_video.hw.context_reset;
     if (g_video.software_rast)
     {
-
         g_video.tex_w = pow2up(geom->max_width);
-        g_video.tex_h = geom->max_height;
+        g_video.tex_h = pow2up(geom->max_height);
         g_video.base_w = geom->base_width;
         g_video.base_h = geom->base_height;
         g_video.aspect = geom->aspect_ratio;
@@ -388,10 +424,15 @@ void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
         g_video.d3ddev = NULL;
         g_video.tex = NULL;
         HRESULT hr;
+        POINT ptOffset = { 0,0 };
+        ClientToScreen(g_video.hwnd, &ptOffset);
+        RECT r = { 0 };
+        GetClientRect(g_video.hwnd, &r);
+        OffsetRect(&r, ptOffset.x, ptOffset.y);
         memset(&g_video.d3dpp, 0, sizeof(g_video.d3dpp));
         g_video.d3dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
-        g_video.d3dpp.BackBufferWidth = 0;
-        g_video.d3dpp.BackBufferHeight = 0;
+        g_video.d3dpp.BackBufferWidth = r.right - r.left;
+        g_video.d3dpp.BackBufferHeight = r.bottom - r.top;
         g_video.d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
         g_video.d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
         g_video.d3dpp.Windowed = true;
@@ -400,11 +441,7 @@ void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
         if (g_video.d3d == NULL) return;
         hr = g_video.d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_video.d3dpp, &g_video.d3ddev);
         if (hr != D3D_OK) return;
-        hr = g_video.d3ddev->SetFVF(VertexFVF);
-        hr = g_video.d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);
-        hr = g_video.d3ddev->SetVertexShader(NULL);
-        created3dtexture(g_video.tex_w, g_video.tex_h);
-
+        resized3d(geom->base_width,geom->base_height);
     }
     else
         video_glinit(geom, hwnd);
@@ -432,6 +469,9 @@ bool video_set_pixel_format(unsigned format) {
     return true;
 }
 
+
+
+
 void video_refresh(const void *data, unsigned width, unsigned height, unsigned pitch) {
     if (data == NULL) return;
     if (g_video.software_rast)
@@ -439,14 +479,24 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         HRESULT hr;
         if (g_video.base_w != width || g_video.base_h != height)
         {
-            d3dvtx[1].u = g_video.base_w / (float)g_video.tex_w;
-            d3dvtx[2].u = g_video.base_w / (float)g_video.tex_w;
-            d3dvtx[2].v = g_video.base_h / (float)g_video.tex_h;
-            d3dvtx[3].v = g_video.base_h / (float)g_video.tex_h;
+            g_video.base_w = width;
+            g_video.base_h = height;
         }
-       
+
+        RECT clientRect = { 0 };
+        GetClientRect(g_video.hwnd, &clientRect);
+        int32_t w = clientRect.right - clientRect.left;
+        int32_t h = clientRect.bottom - clientRect.top;
+        if (w != g_video.last_w || h != g_video.last_h)
+        {
+            resized3d(g_video.base_w,g_video.base_h);
+            g_video.last_w = w;
+            g_video.last_h = h;
+        }
         D3DLOCKED_RECT lock;
-        g_video.tex->LockRect(0, &lock, NULL, D3DLOCK_DISCARD | D3DLOCK_NOOVERWRITE);
+        g_video.tex->LockRect(0, &lock, NULL, D3DLOCK_DISCARD);
+        int sz = g_video.tex_w*g_video.tex_h*g_video.bpp;
+        memset(lock.pBits, 0, sz);
         if ((unsigned int)lock.Pitch == pitch) memcpy(lock.pBits, data, pitch*(height - 1) + (width * g_video.bpp));
         else
         {
@@ -458,7 +508,7 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         g_video.tex->UnlockRect(0);
         g_video.d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
         hr = g_video.d3ddev->BeginScene();
-        hr = g_video.d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, d3dvtx, sizeof(VERTEX));
+        hr = g_video.d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, verts, sizeof(VERTEX));
         hr = g_video.d3ddev->EndScene();
         hr = g_video.d3ddev->Present(NULL, NULL, NULL, NULL);
     }

@@ -161,15 +161,14 @@ void Audio::mix(const int16_t* samples, size_t size)
 }
 
 mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
-    count *= device.channels * mal_get_bytes_per_sample(mal_format_f32);
+    count *= mal_get_bytes_per_frame(mal_format_f32,device.channels);
     EnterCriticalSection(&cs);
     size_t amount = fifo_read_avail(_fifo);
     amount = (count >= amount) ? amount : count;
     fifo_read(_fifo, out, amount);
     SetEvent(sem);
     LeaveCriticalSection(&cs);
-    amount /= device.channels;
-    amount /= mal_get_bytes_per_sample(mal_format_f32);
+    amount /= mal_get_bytes_per_frame(mal_format_f32,device.channels);
     return amount;
 }
 
