@@ -301,6 +301,17 @@ BOOL CenterWindow(HWND hwndWindow)
     return FALSE;
 }
 
+void ResizeWindow(HWND hWnd, int nWidth, int nHeight)
+{
+    RECT rcClient, rcWind;
+    POINT ptDiff;
+    GetClientRect(hWnd, &rcClient);
+    GetWindowRect(hWnd, &rcWind);
+    ptDiff.x = (rcWind.right - rcWind.left) - rcClient.right;
+    ptDiff.y = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+    MoveWindow(hWnd, rcWind.left, rcWind.top, nWidth + ptDiff.x, nHeight + ptDiff.y, TRUE);
+}
+
 void video_glinit(const struct retro_game_geometry *geom, HWND hwnd)
 {
     int nwidth = 0, nheight = 0;
@@ -321,8 +332,6 @@ void video_glinit(const struct retro_game_geometry *geom, HWND hwnd)
     if (!g_video.pixfmt)
         g_video.pixfmt = GL_UNSIGNED_SHORT_5_5_5_1;
 
-    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
     CenterWindow(hwnd);
 
     glGenTextures(1, &g_video.tex_id);
@@ -351,6 +360,7 @@ void video_glinit(const struct retro_game_geometry *geom, HWND hwnd)
 
     refresh_glvbo_data();
     if (g_video.hw.context_reset)g_video.hw.context_reset();
+    ResizeWindow(g_video.hwnd, g_video.base_w * 2, g_video.base_h * 2);
 }
 
 int created3dtexture(int width, int height)
@@ -441,7 +451,9 @@ void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
         if (g_video.d3d == NULL) return;
         hr = g_video.d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_video.d3dpp, &g_video.d3ddev);
         if (hr != D3D_OK) return;
-        resized3d(geom->base_width,geom->base_height);
+       // resized3d(geom->base_width,geom->base_height);
+        ResizeWindow(g_video.hwnd, g_video.base_w < 640?g_video.base_w *3 : g_video.base_w, g_video.base_w < 480 ? g_video.base_h * 3 : g_video.base_h);
+        CenterWindow(g_video.hwnd);
     }
     else
         video_glinit(geom, hwnd);
@@ -481,6 +493,7 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         {
             g_video.base_w = width;
             g_video.base_h = height;
+            resized3d(g_video.base_w, g_video.base_h);
         }
 
         RECT clientRect = { 0 };
@@ -493,10 +506,9 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
             g_video.last_w = w;
             g_video.last_h = h;
         }
-        D3DLOCKED_RECT lock;
+        D3DLOCKED_RECT lock = { 0 };
         g_video.tex->LockRect(0, &lock, NULL, D3DLOCK_DISCARD);
-        int sz = g_video.tex_w*g_video.tex_h*g_video.bpp;
-        memset(lock.pBits, 0, sz);
+        memset(lock.pBits, 0, lock.Pitch*g_video.tex_h);
         if ((unsigned int)lock.Pitch == pitch) memcpy(lock.pBits, data, pitch*(height - 1) + (width * g_video.bpp));
         else
         {
