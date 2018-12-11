@@ -16,8 +16,6 @@ class Data_Writer;
 
 class input
 {
-
-
   // needed by SetCooperativeLevel inside enum callback
   //HWND                    hWnd;
 public:
@@ -32,10 +30,6 @@ public:
   bind_list             * bl;
   HWND hwnd;
   static	input* m_Instance;
-
-
-
-
   static input* GetInstance(HINSTANCE hInstance = NULL, HWND hWnd=NULL);
   const char* open(HINSTANCE hInstance, HWND hWnd);
   void close();

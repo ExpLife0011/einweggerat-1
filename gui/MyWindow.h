@@ -265,11 +265,9 @@ public:
         SetRedraw(FALSE);
         CreateFolder(L"cores");
         CreateFolder(L"system");
-
         LoadPlugins();
         return 0;
     }
-
 
     void start(TCHAR* rom_filename, TCHAR* core_filename, bool specifics, bool threads)
     {
@@ -313,7 +311,6 @@ public:
         tstring ext_filter;
         tstring extensions;
         TCHAR* ext = PathFindExtensionW(lpszPath);
-
         int selected_core = 0;
         int found_core = 0;
         std::vector<tstring> core_paths;
@@ -330,7 +327,6 @@ public:
             {
                 found_core++;
                 selected_core = i;
-
                 ext_filter += cores[i].core_system;
                 core_paths.push_back(cores[i].core_path);
                 extensions = cores[i].core_exts;

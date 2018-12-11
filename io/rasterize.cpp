@@ -17,7 +17,6 @@ typedef struct
 } VERTEX;
 VERTEX verts[4] = { 0 };
 
-
 int pow2up(int d)
 {
     int c = 2048;
@@ -25,7 +24,6 @@ int pow2up(int d)
         c /= 2;
     return c * 2;
 }
-
 
 static const PIXELFORMATDESCRIPTOR pfd =
 {
@@ -87,6 +85,7 @@ void ortho2d(float m[4][4], float left, float right, float bottom, float top) {
     m[3][0] = -(right + left) / (right - left);
     m[3][1] = -(top + bottom) / (top - bottom);
 }
+
 GLuint compile_glshader(unsigned type, unsigned count, const char **strings) {
     GLint status;
     GLuint shader = glCreateShader(type);
@@ -99,7 +98,6 @@ GLuint compile_glshader(unsigned type, unsigned count, const char **strings) {
     }
     return shader;
 }
-
 
 void init_glshaders() {
     GLint status;
@@ -140,7 +138,6 @@ void init_glshaders() {
     glUniformMatrix4fv(g_glshader.u_mvp, 1, GL_FALSE, (float*)m);
     glUseProgram(0);
 }
-
 
 void refresh_glvbo_data() {
 
@@ -219,7 +216,7 @@ RECT resize_glcb(int width, int height) {
     else if (width_calc / height_calc < aspect)
         height_calc = width_calc / aspect;
     unsigned x = (unsigned)rectw / width_calc;
-    unsigned y = (unsigned)recth/ height_calc;
+    unsigned y = (unsigned)recth / height_calc;
     unsigned factor = x < y ? x : y;
     RECT view;
     view.right = (unsigned)(width_calc* factor);
@@ -252,7 +249,6 @@ void create_glwindow(int width, int height, HWND hwnd) {
     g_video.last_w = 0;
     g_video.last_h = 0;
 }
-
 
 void resize_to_aspect(double ratio, int sw, int sh, int *dw, int *dh) {
     *dw = sw;
@@ -451,7 +447,7 @@ void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
         if (g_video.d3d == NULL) return;
         hr = g_video.d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_video.d3dpp, &g_video.d3ddev);
         if (hr != D3D_OK) return;
-        ResizeWindow(g_video.hwnd, g_video.base_w < 640?g_video.base_w *3 : g_video.base_w, g_video.base_w < 480 ? g_video.base_h * 3 : g_video.base_h);
+        ResizeWindow(g_video.hwnd, g_video.base_w < 640 ? g_video.base_w * 3 : g_video.base_w, g_video.base_w < 480 ? g_video.base_h * 3 : g_video.base_h);
         CenterWindow(g_video.hwnd);
     }
     else
@@ -480,9 +476,6 @@ bool video_set_pixel_format(unsigned format) {
     return true;
 }
 
-
-
-
 void video_refresh(const void *data, unsigned width, unsigned height, unsigned pitch) {
     if (data == NULL) return;
     if (g_video.software_rast)
@@ -501,7 +494,7 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         int32_t h = clientRect.bottom - clientRect.top;
         if (w != g_video.last_w || h != g_video.last_h)
         {
-            resized3d(g_video.base_w,g_video.base_h);
+            resized3d(g_video.base_w, g_video.base_h);
             g_video.last_w = w;
             g_video.last_h = h;
         }
@@ -549,7 +542,7 @@ void video_refresh(const void *data, unsigned width, unsigned height, unsigned p
         glUseProgram(0);
         SwapBuffers(g_video.hDC);
     }
-   
+
 }
 
 void video_gldeinit()
@@ -605,7 +598,5 @@ void video_deinit() {
             g_video.d3d->Release();
             g_video.d3d = 0;
         }
-
     }
-
 }

@@ -18,10 +18,8 @@
 using namespace std;
 using namespace utf8util;
 
-
 static struct retro_frame_time_callback runloop_frame_time;
 static struct retro_audio_callback audio_callback;
-
 
 unsigned char* load_inputsettings(TCHAR* path, unsigned * size)
 {
@@ -71,7 +69,6 @@ const char* load_coresettings(retro_variable *var) {
     return NULL;
 }
 
-
 void save_inputsettings(unsigned char* data_ptr, unsigned data_sz)
 {
     CLibretro *retro = CLibretro::GetInstance();
@@ -89,7 +86,6 @@ void save_inputsettings(unsigned char* data_ptr, unsigned data_sz)
         fp = _wfopen(retro->core_config, L"w");
         data[size] = '\0';
         ini = ini_load(data, NULL);
-
         int section = ini_find_section(ini, "Input Settings", strlen("Input Settings"));
         unsigned outbaselen = 0;
         TCHAR* data2 = Mud_Base64::encode(data_ptr, data_sz, &outbaselen);
@@ -117,7 +113,6 @@ void save_inputsettings(unsigned char* data_ptr, unsigned data_sz)
     }
     if (data)free(data);
 }
-
 
 void save_coresettings()
 {
@@ -504,8 +499,6 @@ static int16_t core_input_state(unsigned port, unsigned device, unsigned index, 
             }
         }
     }
-
-
     return 0;
 }
 

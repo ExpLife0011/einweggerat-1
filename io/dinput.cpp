@@ -35,8 +35,6 @@ class dinput_i : public dinput
 
     mouse_t mousie;
 
-
-
     struct joy
     {
         unsigned             serial;

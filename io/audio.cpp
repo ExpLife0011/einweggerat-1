@@ -59,8 +59,6 @@ static mal_uint32 audio_callback(mal_device* pDevice, mal_uint32 frameCount, voi
 static retro_time_t frame_limit_minimum_time = 0.0;
 static retro_time_t frame_limit_last_time = 0.0;
 
-
-
 bool Audio::init(double refreshra, retro_system_av_info av)
 {
     sem = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -99,7 +97,7 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     input_float = new float[FRAME_COUNT * 4];
     if (mal_device_start(&device) != MAL_SUCCESS)return false;
     frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / (av.timing.fps));
-    
+
     return true;
 }
 void Audio::destroy()
@@ -154,21 +152,21 @@ void Audio::mix(const int16_t* samples, size_t size)
             {
                 ResetEvent(sem);
             }
-          
+
             continue;
         }
     }
 }
 
 mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {
-    count *= mal_get_bytes_per_frame(mal_format_f32,device.channels);
+    count *= mal_get_bytes_per_frame(mal_format_f32, device.channels);
     EnterCriticalSection(&cs);
     size_t amount = fifo_read_avail(_fifo);
     amount = (count >= amount) ? amount : count;
     fifo_read(_fifo, out, amount);
     SetEvent(sem);
     LeaveCriticalSection(&cs);
-    amount /= mal_get_bytes_per_frame(mal_format_f32,device.channels);
+    amount /= mal_get_bytes_per_frame(mal_format_f32, device.channels);
     return amount;
 }
 

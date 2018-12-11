@@ -19,8 +19,6 @@ public:
 
     struct di_event
     {
-
-
         typedef enum
         {
             ev_key,

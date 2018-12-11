@@ -1,5 +1,5 @@
 // Audio playback and capture library. Public domain. See "unlicense" statement at the end of this file.
-// mini_al - v0.8.12 - 2018-11-27
+// mini_al - v0.8.13 - 2018-12-04
 //
 // David Reid - davidreidsoftware@gmail.com
 
@@ -1698,6 +1698,7 @@ struct mal_context
             mal_proc AudioOutputUnitStart;
             mal_proc AudioOutputUnitStop;
             mal_proc AudioUnitAddPropertyListener;
+            mal_proc AudioUnitGetPropertyInfo;
             mal_proc AudioUnitGetProperty;
             mal_proc AudioUnitSetProperty;
             mal_proc AudioUnitInitialize;
@@ -13685,6 +13686,7 @@ typedef OSStatus (* mal_AudioComponentInstanceNew_proc)(AudioComponent inCompone
 typedef OSStatus (* mal_AudioOutputUnitStart_proc)(AudioUnit inUnit);
 typedef OSStatus (* mal_AudioOutputUnitStop_proc)(AudioUnit inUnit);
 typedef OSStatus (* mal_AudioUnitAddPropertyListener_proc)(AudioUnit inUnit, AudioUnitPropertyID inID, AudioUnitPropertyListenerProc inProc, void* inProcUserData);
+typedef OSStatus (* mal_AudioUnitGetPropertyInfo_proc)(AudioUnit inUnit, AudioUnitPropertyID inID, AudioUnitScope inScope, AudioUnitElement inElement, UInt32* outDataSize, Boolean* outWriteable);
 typedef OSStatus (* mal_AudioUnitGetProperty_proc)(AudioUnit inUnit, AudioUnitPropertyID inID, AudioUnitScope inScope, AudioUnitElement inElement, void* outData, UInt32* ioDataSize);
 typedef OSStatus (* mal_AudioUnitSetProperty_proc)(AudioUnit inUnit, AudioUnitPropertyID inID, AudioUnitScope inScope, AudioUnitElement inElement, const void* inData, UInt32 inDataSize);
 typedef OSStatus (* mal_AudioUnitInitialize_proc)(AudioUnit inUnit);
@@ -13937,6 +13939,80 @@ mal_result mal_format_from_AudioStreamBasicDescription(const AudioStreamBasicDes
     return MAL_FORMAT_NOT_SUPPORTED;
 }
 
+mal_result mal_get_channel_map_from_AudioChannelLayout(AudioChannelLayout* pChannelLayout, mal_channel channelMap[MAL_MAX_CHANNELS])
+{
+    mal_assert(pChannelLayout != NULL);
+    
+    if (pChannelLayout->mChannelLayoutTag == kAudioChannelLayoutTag_UseChannelDescriptions) {
+        for (UInt32 iChannel = 0; iChannel < pChannelLayout->mNumberChannelDescriptions; ++iChannel) {
+            channelMap[iChannel] = mal_channel_from_AudioChannelLabel(pChannelLayout->mChannelDescriptions[iChannel].mChannelLabel);
+        }
+    } else
+#if 0
+    if (pChannelLayout->mChannelLayoutTag == kAudioChannelLayoutTag_UseChannelBitmap) {
+        // This is the same kind of system that's used by Windows audio APIs.
+        UInt32 iChannel = 0;
+        AudioChannelBitmap bitmap = pChannelLayout->mChannelBitmap;
+        for (UInt32 iBit = 0; iBit < 32; ++iBit) {
+            AudioChannelBitmap bit = bitmap & (1 << iBit);
+            if (bit != 0) {
+                channelMap[iChannel++] = mal_channel_from_AudioChannelBit(bit);
+            }
+        }
+    } else
+#endif
+    {
+        // Need to use the tag to determine the channel map. For now I'm just assuming a default channel map, but later on this should
+        // be updated to determine the mapping based on the tag.
+        UInt32 channelCount = AudioChannelLayoutTag_GetNumberOfChannels(pChannelLayout->mChannelLayoutTag);
+        switch (pChannelLayout->mChannelLayoutTag)
+        {
+            case kAudioChannelLayoutTag_Mono:
+            case kAudioChannelLayoutTag_Stereo:
+            case kAudioChannelLayoutTag_StereoHeadphones:
+            case kAudioChannelLayoutTag_MatrixStereo:
+            case kAudioChannelLayoutTag_MidSide:
+            case kAudioChannelLayoutTag_XY:
+            case kAudioChannelLayoutTag_Binaural:
+            case kAudioChannelLayoutTag_Ambisonic_B_Format:
+            {
+                mal_get_standard_channel_map(mal_standard_channel_map_default, channelCount, channelMap);
+            } break;
+            
+            case kAudioChannelLayoutTag_Octagonal:
+            {
+                channelMap[7] = MAL_CHANNEL_SIDE_RIGHT;
+                channelMap[6] = MAL_CHANNEL_SIDE_LEFT;
+            } // Intentional fallthrough.
+            case kAudioChannelLayoutTag_Hexagonal:
+            {
+                channelMap[5] = MAL_CHANNEL_BACK_CENTER;
+            } // Intentional fallthrough.
+            case kAudioChannelLayoutTag_Pentagonal:
+            {
+                channelMap[4] = MAL_CHANNEL_FRONT_CENTER;
+            } // Intentional fallghrough.
+            case kAudioChannelLayoutTag_Quadraphonic:
+            {
+                channelMap[3] = MAL_CHANNEL_BACK_RIGHT;
+                channelMap[2] = MAL_CHANNEL_BACK_LEFT;
+                channelMap[1] = MAL_CHANNEL_RIGHT;
+                channelMap[0] = MAL_CHANNEL_LEFT;
+            } break;
+            
+            // TODO: Add support for more tags here.
+        
+            default:
+            {
+                mal_get_standard_channel_map(mal_standard_channel_map_default, channelCount, channelMap);
+            } break;
+        }
+    }
+    
+    return MAL_SUCCESS;
+}
+
+
 #if defined(MAL_APPLE_DESKTOP)
 mal_result mal_get_device_object_ids__coreaudio(mal_context* pContext, UInt32* pDeviceCount, AudioObjectID** ppDeviceObjectIDs) // NOTE: Free the returned buffer with mal_free().
 {
@@ -14118,7 +14194,6 @@ mal_result mal_get_AudioObject_stream_descriptions(mal_context* pContext, AudioO
 }
 
 
-
 mal_result mal_get_AudioObject_channel_layout(mal_context* pContext, AudioObjectID deviceObjectID, mal_device_type deviceType, AudioChannelLayout** ppChannelLayout)   // NOTE: Free the returned pointer with mal_free().
 {
     mal_assert(pContext != NULL);
@@ -14177,79 +14252,6 @@ mal_result mal_get_AudioObject_channel_count(mal_context* pContext, AudioObjectI
     return MAL_SUCCESS;
 }
 
-mal_result mal_get_channel_map_from_AudioChannelLayout(AudioChannelLayout* pChannelLayout, mal_channel channelMap[MAL_MAX_CHANNELS])
-{
-    mal_assert(pChannelLayout != NULL);
-    
-    if (pChannelLayout->mChannelLayoutTag == kAudioChannelLayoutTag_UseChannelDescriptions) {
-        for (UInt32 iChannel = 0; iChannel < pChannelLayout->mNumberChannelDescriptions; ++iChannel) {
-            channelMap[iChannel] = mal_channel_from_AudioChannelLabel(pChannelLayout->mChannelDescriptions[iChannel].mChannelLabel);
-        }
-    } else
-#if 0
-    if (pChannelLayout->mChannelLayoutTag == kAudioChannelLayoutTag_UseChannelBitmap) {
-        // This is the same kind of system that's used by Windows audio APIs.
-        UInt32 iChannel = 0;
-        AudioChannelBitmap bitmap = pChannelLayout->mChannelBitmap;
-        for (UInt32 iBit = 0; iBit < 32; ++iBit) {
-            AudioChannelBitmap bit = bitmap & (1 << iBit);
-            if (bit != 0) {
-                channelMap[iChannel++] = mal_channel_from_AudioChannelBit(bit);
-            }
-        }
-    } else
-#endif
-    {
-        // Need to use the tag to determine the channel map. For now I'm just assuming a default channel map, but later on this should
-        // be updated to determine the mapping based on the tag.
-        UInt32 channelCount = AudioChannelLayoutTag_GetNumberOfChannels(pChannelLayout->mChannelLayoutTag);
-        switch (pChannelLayout->mChannelLayoutTag)
-        {
-            case kAudioChannelLayoutTag_Mono:
-            case kAudioChannelLayoutTag_Stereo:
-            case kAudioChannelLayoutTag_StereoHeadphones:
-            case kAudioChannelLayoutTag_MatrixStereo:
-            case kAudioChannelLayoutTag_MidSide:
-            case kAudioChannelLayoutTag_XY:
-            case kAudioChannelLayoutTag_Binaural:
-            case kAudioChannelLayoutTag_Ambisonic_B_Format:
-            {
-                mal_get_standard_channel_map(mal_standard_channel_map_default, channelCount, channelMap);
-            } break;
-            
-            case kAudioChannelLayoutTag_Octagonal:
-            {
-                channelMap[7] = MAL_CHANNEL_SIDE_RIGHT;
-                channelMap[6] = MAL_CHANNEL_SIDE_LEFT;
-            } // Intentional fallthrough.
-            case kAudioChannelLayoutTag_Hexagonal:
-            {
-                channelMap[5] = MAL_CHANNEL_BACK_CENTER;
-            } // Intentional fallthrough.
-            case kAudioChannelLayoutTag_Pentagonal:
-            {
-                channelMap[4] = MAL_CHANNEL_FRONT_CENTER;
-            } // Intentional fallghrough.
-            case kAudioChannelLayoutTag_Quadraphonic:
-            {
-                channelMap[3] = MAL_CHANNEL_BACK_RIGHT;
-                channelMap[2] = MAL_CHANNEL_BACK_LEFT;
-                channelMap[1] = MAL_CHANNEL_RIGHT;
-                channelMap[0] = MAL_CHANNEL_LEFT;
-            } break;
-            
-            // TODO: Add support for more tags here.
-        
-            default:
-            {
-                mal_get_standard_channel_map(mal_standard_channel_map_default, channelCount, channelMap);
-            } break;
-        }
-    }
-    
-    return MAL_SUCCESS;
-}
-
 mal_result mal_get_AudioObject_channel_map(mal_context* pContext, AudioObjectID deviceObjectID, mal_device_type deviceType, mal_channel channelMap[MAL_MAX_CHANNELS])
 {
     mal_assert(pContext != NULL);
@@ -14262,9 +14264,11 @@ mal_result mal_get_AudioObject_channel_map(mal_context* pContext, AudioObjectID 
     
     result = mal_get_channel_map_from_AudioChannelLayout(pChannelLayout, channelMap);
     if (result != MAL_SUCCESS) {
+        mal_free(pChannelLayout);
         return result;
     }
     
+    mal_free(pChannelLayout);
     return result;
 }
 
@@ -14682,7 +14686,46 @@ mal_result mal_find_best_format__coreaudio(mal_context* pContext, AudioObjectID 
 }
 #endif
 
+mal_result mal_get_AudioUnit_channel_map(mal_context* pContext, AudioUnit audioUnit, mal_device_type deviceType, mal_channel channelMap[MAL_MAX_CHANNELS])
+{
+    mal_assert(pContext != NULL);
+    
+    AudioUnitScope deviceScope;
+    AudioUnitElement deviceBus;
+    if (deviceType == mal_device_type_playback) {
+        deviceScope = kAudioUnitScope_Output;
+        deviceBus = MAL_COREAUDIO_OUTPUT_BUS;
+    } else {
+        deviceScope = kAudioUnitScope_Input;
+        deviceBus = MAL_COREAUDIO_INPUT_BUS;
+    }
+    
+    UInt32 channelLayoutSize;
+    OSStatus status = ((mal_AudioUnitGetPropertyInfo_proc)pContext->coreaudio.AudioUnitGetPropertyInfo)(audioUnit, kAudioUnitProperty_AudioChannelLayout, deviceScope, deviceBus, &channelLayoutSize, NULL);
+    if (status != noErr) {
+        return mal_result_from_OSStatus(status);
+    }
+    
+    AudioChannelLayout* pChannelLayout = (AudioChannelLayout*)mal_malloc(channelLayoutSize);
+    if (pChannelLayout == NULL) {
+        return MAL_OUT_OF_MEMORY;
+    }
+    
+    status = ((mal_AudioUnitGetProperty_proc)pContext->coreaudio.AudioUnitGetProperty)(audioUnit, kAudioUnitProperty_AudioChannelLayout, deviceScope, deviceBus, pChannelLayout, &channelLayoutSize);
+    if (status != noErr) {
+        mal_free(pChannelLayout);
+        return mal_result_from_OSStatus(status);
+    }
+    
+    mal_result result = mal_get_channel_map_from_AudioChannelLayout(pChannelLayout, channelMap);
+    if (result != MAL_SUCCESS) {
+        mal_free(pChannelLayout);
+        return result;
+    }
 
+    mal_free(pChannelLayout);
+    return MAL_SUCCESS;
+}
 
 mal_bool32 mal_context_is_device_id_equal__coreaudio(mal_context* pContext, const mal_device_id* pID0, const mal_device_id* pID1)
 {
@@ -15391,11 +15434,24 @@ mal_result mal_device_init_internal__coreaudio(mal_context* pContext, mal_device
     }
     
     
-    // Internal channel map.
+    // Internal channel map. This is weird in my testing. If I use the AudioObject to get the
+    // channel map, the channel descriptions are set to "Unknown" for some reason. To work around
+    // this it looks like retrieving it from the AudioUnit will work. However, and this is where
+    // it gets weird, it doesn't seem to work with capture devices, nor at all on iOS... Therefore
+    // I'm going to fall back to a default assumption in these cases.
 #if defined(MAL_APPLE_DESKTOP)
-    result = mal_get_AudioObject_channel_map(pContext, deviceObjectID, deviceType, pData->channelMapOut);
+    result = mal_get_AudioUnit_channel_map(pContext, pData->audioUnit, deviceType, pData->channelMapOut);
     if (result != MAL_SUCCESS) {
-        return result;
+    #if 0
+        // Try falling back to the channel map from the AudioObject.
+        result = mal_get_AudioObject_channel_map(pContext, deviceObjectID, deviceType, pData->channelMapOut);
+        if (result != MAL_SUCCESS) {
+            return result;
+        }
+    #else
+        // Fall back to default assumptions.
+        mal_get_standard_channel_map(mal_standard_channel_map_default, pData->channelsOut, pData->channelMapOut);
+    #endif
     }
 #else
     // TODO: Figure out how to get the channel map using AVAudioSession.
@@ -15608,7 +15664,7 @@ mal_result mal_device_init__coreaudio(mal_context* pContext, mal_device_type dev
     data.usingDefaultChannelMap = pDevice->usingDefaultChannelMap;
     data.shareMode = pDevice->initConfig.shareMode;
 
-    mal_result result = mal_device_init_internal__coreaudio(pDevice->pContext, pDevice->type, NULL, &data, (void*)pDevice);
+    mal_result result = mal_device_init_internal__coreaudio(pDevice->pContext, pDevice->type, pDeviceID, &data, (void*)pDevice);
     if (result != MAL_SUCCESS) {
         return result;
     }
@@ -15759,6 +15815,7 @@ mal_result mal_context_init__coreaudio(mal_context* pContext)
     pContext->coreaudio.AudioOutputUnitStart           = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioOutputUnitStart");
     pContext->coreaudio.AudioOutputUnitStop            = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioOutputUnitStop");
     pContext->coreaudio.AudioUnitAddPropertyListener   = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioUnitAddPropertyListener");
+    pContext->coreaudio.AudioUnitGetPropertyInfo       = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioUnitGetPropertyInfo");
     pContext->coreaudio.AudioUnitGetProperty           = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioUnitGetProperty");
     pContext->coreaudio.AudioUnitSetProperty           = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioUnitSetProperty");
     pContext->coreaudio.AudioUnitInitialize            = mal_dlsym(pContext->coreaudio.hAudioUnit, "AudioUnitInitialize");
@@ -15779,6 +15836,7 @@ mal_result mal_context_init__coreaudio(mal_context* pContext)
     pContext->coreaudio.AudioOutputUnitStart           = (mal_proc)AudioOutputUnitStart;
     pContext->coreaudio.AudioOutputUnitStop            = (mal_proc)AudioOutputUnitStop;
     pContext->coreaudio.AudioUnitAddPropertyListener   = (mal_proc)AudioUnitAddPropertyListener;
+    pContext->coreaudio.AudioUnitGetPropertyInfo       = (mal_proc)AudioUnitGetPropertyInfo;
     pContext->coreaudio.AudioUnitGetProperty           = (mal_proc)AudioUnitGetProperty;
     pContext->coreaudio.AudioUnitSetProperty           = (mal_proc)AudioUnitSetProperty;
     pContext->coreaudio.AudioUnitInitialize            = (mal_proc)AudioUnitInitialize;
@@ -24618,8 +24676,8 @@ float g_malChannelPlaneRatios[MAL_CHANNEL_POSITION_COUNT][6] = {
     { 0.0f,  0.5f,  0.5f,  0.0f,  0.0f,  0.0f},  // MAL_CHANNEL_FRONT_RIGHT
     { 0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f},  // MAL_CHANNEL_FRONT_CENTER
     { 0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f},  // MAL_CHANNEL_LFE
-    { 0.5f,  0.0f,  0.0f,  0.0f,  0.5f,  0.0f},  // MAL_CHANNEL_BACK_LEFT
-    { 0.0f,  0.5f,  0.0f,  0.0f,  0.5f,  0.0f},  // MAL_CHANNEL_BACK_RIGHT
+    { 0.5f,  0.0f,  0.0f,  0.5f,  0.0f,  0.0f},  // MAL_CHANNEL_BACK_LEFT
+    { 0.0f,  0.5f,  0.0f,  0.5f,  0.0f,  0.0f},  // MAL_CHANNEL_BACK_RIGHT
     { 0.25f, 0.0f,  0.75f, 0.0f,  0.0f,  0.0f},  // MAL_CHANNEL_FRONT_LEFT_CENTER
     { 0.0f,  0.25f, 0.75f, 0.0f,  0.0f,  0.0f},  // MAL_CHANNEL_FRONT_RIGHT_CENTER
     { 0.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f},  // MAL_CHANNEL_BACK_CENTER
@@ -28414,6 +28472,10 @@ mal_uint64 mal_sine_wave_read_ex(mal_sine_wave* pSineWave, mal_uint64 frameCount
 
 // REVISION HISTORY
 // ================
+//
+// v0.8.13 - 2018-12-04
+//   - Core Audio: Fix a bug with channel mapping.
+//   - Fix a bug with channel routing where the back/left and back/right channels have the wrong weight.
 //
 // v0.8.12 - 2018-11-27
 //   - Drop support for SDL 1.2. The Emscripten build now requires "-s USE_SDL=2".

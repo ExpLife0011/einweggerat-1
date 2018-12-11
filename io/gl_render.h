@@ -36,7 +36,6 @@ typedef struct {
   HGLRC hRC;
   HWND hwnd;
   struct retro_hw_render_callback hw;
-
 }video;
 extern video g_video;
 
