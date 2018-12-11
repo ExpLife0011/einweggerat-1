@@ -451,7 +451,6 @@ void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
         if (g_video.d3d == NULL) return;
         hr = g_video.d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_video.d3dpp, &g_video.d3ddev);
         if (hr != D3D_OK) return;
-       // resized3d(geom->base_width,geom->base_height);
         ResizeWindow(g_video.hwnd, g_video.base_w < 640?g_video.base_w *3 : g_video.base_w, g_video.base_w < 480 ? g_video.base_h * 3 : g_video.base_h);
         CenterWindow(g_video.hwnd);
     }

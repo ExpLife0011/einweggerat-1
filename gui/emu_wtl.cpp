@@ -11,6 +11,8 @@
 using namespace std;
 CAppModule _Module;
 
+
+
 int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	CEmuMessageLoop theLoop;

@@ -204,6 +204,17 @@ public:
         return 0;
     }
 
+    void CreateFolder(TCHAR* path)
+    {
+        TCHAR filename[MAX_PATH] = { 0 };
+        GetCurrentDirectory(MAX_PATH, filename);
+        PathAppend(filename, path);
+        if (!CreateDirectory(filename, NULL))
+        {
+            return;
+        }
+    }
+
     void LoadPlugins(void)
     {
         int plugin_count = 0;
@@ -252,6 +263,9 @@ public:
         pLoop->AddMessageFilter(this);
         RegisterDropTarget();
         SetRedraw(FALSE);
+        CreateFolder(L"cores");
+        CreateFolder(L"system");
+
         LoadPlugins();
         return 0;
     }
