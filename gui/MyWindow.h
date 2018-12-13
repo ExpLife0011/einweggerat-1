@@ -134,7 +134,7 @@ public:
         if (!emulator->isEmulating)
         {
             MessageBox(L"No libretro core loaded.", L"Error", MB_ICONSTOP);
-            return;
+            return 0;
         }
 
         CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, sFiles);
@@ -177,7 +177,7 @@ public:
         if (!emulator->isEmulating)
         {
             MessageBox(L"No libretro core loaded.", L"Error", MB_ICONSTOP);
-            return;
+            return 0;
         }
 
         CFileDialog dlg(FALSE, L"*.state", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, sFiles);
