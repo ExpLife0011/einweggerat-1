@@ -156,7 +156,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>out_x86\libretro_loader.exe</OutputFile>
+      <OutputFile>out_x86\einweggerat_x86.exe</OutputFile>
       <AdditionalDependencies>dinput8.lib;winmm.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
@@ -184,7 +184,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <OutputFile>out_x64\einweggerat.exe</OutputFile>
+      <OutputFile>out_x64\einweggerat_x64.exe</OutputFile>
       <AdditionalDependencies>dinput8.lib;winmm.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>out_x64/einweggerat.map</MapFileName>

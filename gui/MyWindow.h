@@ -130,6 +130,13 @@ public:
         LPCTSTR sFiles =
             L"Savestates (*.state)\0*.state\0"
             L"All Files (*.*)\0*.*\0\0";
+
+        if (!emulator->isEmulating)
+        {
+            MessageBox(L"No libretro core loaded.", L"Error", MB_ICONSTOP);
+            return;
+        }
+
         CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, sFiles);
         if (dlg.DoModal() == IDOK)
         {
@@ -166,6 +173,13 @@ public:
         LPCTSTR sFiles =
             L"Savestates (*.state)\0*.state\0"
             L"All Files (*.*)\0*.*\0\0";
+
+        if (!emulator->isEmulating)
+        {
+            MessageBox(L"No libretro core loaded.", L"Error", MB_ICONSTOP);
+            return;
+        }
+
         CFileDialog dlg(FALSE, L"*.state", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, sFiles);
         if (dlg.DoModal() == IDOK)
         {
