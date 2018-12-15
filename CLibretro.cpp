@@ -3,7 +3,9 @@
 #include "CLibretro.h"
 #include "3rdparty/libretro.h"
 
+#define MUDLIB_IMPLEMENTATION
 #include "mudlib.h"
+
 #include "io/gl_render.h"
 #include "gui/utf8conv.h"
 #define INI_IMPLEMENTATION

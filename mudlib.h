@@ -7,9 +7,6 @@
 
 #pragma comment(lib, "crypt32.lib") 
 
-#ifdef MUDLIB_IMPLEMENTATION
-#undef MUDLIB_IMPLEMENTATION
-
 class Mud_Base64
 {
 public:
@@ -152,10 +149,21 @@ public:
     }
 };
 
-class Mud_MiscWindows
+class Mud_Misc
 {
 public:
-    
+    static __forceinline uint32_t pow2up(uint32_t v)
+    {
+        v--;
+        v |= v >> 1;
+        v |= v >> 2;
+        v |= v >> 4;
+        v |= v >> 8;
+        v |= v >> 16;
+        v++;
+        return v;
+    }
+
     static void redirectiotoconsole()
     {
         freopen("CONOUT$", "w", stdout);
@@ -212,7 +220,7 @@ public:
         LPSTR buffer = ((LPSTR)result) + numArgs * sizeof(LPSTR);
         for (int i = 0; i < numArgs; ++i)
         {
-            assert(bufLen > 0);
+           
             BOOL lpUsedDefaultChar = FALSE;
             retval = WideCharToMultiByte(CP_ACP, 0, args[i], -1, buffer, bufLen, NULL, &lpUsedDefaultChar);
             if (!SUCCEEDED(retval))
@@ -233,5 +241,3 @@ public:
         return result;
     }
 };
-
-#endif 

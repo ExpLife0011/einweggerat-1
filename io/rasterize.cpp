@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <d3d9.h>
 #include "../3rdparty/libretro.h"
+#include "../mudlib.h"
 #include "glad.h"
 #include "gl_render.h"
 #include <math.h>
@@ -16,14 +17,6 @@ typedef struct
     FLOAT u, v;
 } VERTEX;
 VERTEX verts[4] = { 0 };
-
-int pow2up(int d)
-{
-    int c = 2048;
-    while (d <= c)
-        c /= 2;
-    return c * 2;
-}
 
 static const PIXELFORMATDESCRIPTOR pfd =
 {
@@ -420,8 +413,8 @@ void video_init(const struct retro_game_geometry *geom, HWND hwnd) {
     g_video.software_rast = !g_video.hw.context_reset;
     if (g_video.software_rast)
     {
-        g_video.tex_w = pow2up(geom->max_width);
-        g_video.tex_h = pow2up(geom->max_height);
+        g_video.tex_w = Mud_Misc::pow2up(geom->max_width);
+        g_video.tex_h = Mud_Misc::pow2up(geom->max_height);
         g_video.base_w = geom->base_width;
         g_video.base_h = geom->base_height;
         g_video.aspect = geom->aspect_ratio;

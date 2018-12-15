@@ -1,6 +1,7 @@
 #define MAL_IMPLEMENTATION
 #include <windows.h>
 #include "audio.h"
+#include "../mudlib.h"
 using namespace std;
 
 #define FRAME_COUNT (1024)
@@ -59,6 +60,9 @@ static mal_uint32 audio_callback(mal_device* pDevice, mal_uint32 frameCount, voi
 static retro_time_t frame_limit_minimum_time = 0.0;
 static retro_time_t frame_limit_last_time = 0.0;
 
+   
+
+
 bool Audio::init(double refreshra, retro_system_av_info av)
 {
     sem = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -82,8 +86,8 @@ bool Audio::init(double refreshra, retro_system_av_info av)
         return false;
     };
 
-    mal_device_config config = mal_device_config_init_playback(mal_format_f32, 2, 0, audio_callback);
-    config.bufferSizeInFrames = (FRAME_COUNT);
+    mal_device_config config = mal_device_config_init_playback(mal_format_f32, 2, 44100, audio_callback);
+    config.bufferSizeInFrames =Mud_Misc::pow2up(((44100 * (50/4)) / 1000));
     if (mal_device_init(&context, mal_device_type_playback, NULL, &config, this, &device) != MAL_SUCCESS) {
         mal_context_uninit(&context);
         return false;
@@ -91,13 +95,11 @@ bool Audio::init(double refreshra, retro_system_av_info av)
     client_rate = device.sampleRate;
     resamp_original = (client_rate / system_rate);
     resample = resampler_sinc_init(resamp_original);
-    size_t sampsize = mal_device_get_buffer_size_in_bytes(&device);
+    size_t sampsize = Mud_Misc::pow2up(mal_device_get_buffer_size_in_bytes(&device))*8;
     _fifo = fifo_new(sampsize); //number of bytes
-    output_float = new float[sampsize * 2]; //spare space for resampler
-    input_float = new float[FRAME_COUNT * 4];
+    output_float = new float[sampsize]; //spare space for resampler
+    input_float = new float[sampsize];
     if (mal_device_start(&device) != MAL_SUCCESS)return false;
-    frame_limit_minimum_time = (retro_time_t)roundf(1000000.0f / (av.timing.fps));
-
     return true;
 }
 void Audio::destroy()
@@ -117,7 +119,7 @@ void Audio::reset()
 {
 }
 
-void Audio::mix(const int16_t* samples, size_t size)
+int Audio::mix(const int16_t* samples, size_t size)
 {
     struct resampler_data src_data = { 0 };
     size_t written = 0;
@@ -156,6 +158,7 @@ void Audio::mix(const int16_t* samples, size_t size)
             continue;
         }
     }
+    return size;
 }
 
 mal_uint32 Audio::fill_buffer(uint8_t* out, mal_uint32 count) {

@@ -260,10 +260,9 @@ static size_t core_audio_sample_batch(const int16_t *data, size_t frames)
     CLibretro* lib = CLibretro::GetInstance();
     if (lib->isEmulating)
     {
-        lib->_audio.mix(data, frames);
-        return frames;
+        return  lib->_audio.mix(data, frames);
     }
-    return 0;
+    return frames;
 }
 
 static void core_log(enum retro_log_level level, const char *fmt, ...) {

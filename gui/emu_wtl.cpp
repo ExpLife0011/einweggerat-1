@@ -37,7 +37,7 @@ int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
     menu.DestroyMenu();
 
     int argc = 1;
-    char** cmdargptr = Mud_MiscWindows::cmdlinetoargANSI(GetCommandLineA(), &argc);
+    char** cmdargptr = Mud_Misc::cmdlinetoargANSI(GetCommandLineA(), &argc);
 
     if (argc < 2)
     {
@@ -45,7 +45,7 @@ int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
         {
             AllocConsole();
             AttachConsole(GetCurrentProcessId());
-            Mud_MiscWindows::redirectiotoconsole();
+            Mud_Misc::redirectiotoconsole();
             dlgMain.ShowWindow(nCmdShow);
             int nRet = theLoop.Run(dlgMain);
             _Module.RemoveMessageLoop();
@@ -55,7 +55,7 @@ int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
         }
         else
         {
-            Mud_MiscWindows::redirectiotoconsole();
+            Mud_Misc::redirectiotoconsole();
             cmdline::parser a;
             a.add<string>("core_name", 'c', "core filename", true, "");
             a.add<string>("rom_name", 'r', "rom filename", true, "");
@@ -75,11 +75,11 @@ int Run(LPTSTR cmdline = NULL, int nCmdShow = SW_SHOWDEFAULT)
     {
         AllocConsole();
         AttachConsole(GetCurrentProcessId());
-        Mud_MiscWindows::redirectiotoconsole();
+        Mud_Misc::redirectiotoconsole();
     }
     else
     {
-        Mud_MiscWindows::redirectiotoconsole();
+        Mud_Misc::redirectiotoconsole();
     }
     cmdline::parser a;
     a.add<string>("core_name", 'c', "core filename", true, "");
